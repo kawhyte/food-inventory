@@ -5,9 +5,10 @@
 - [x] Execute SQL to create tables and Row Level Security (RLS) policies
 - [ ] Implement basic Auth and Profile/Household linking
 
-## Phase 2: Core Inventory CRUD
-- [ ] Build UI for manual entry, location viewing, and status toggling
-- [ ] Implement realtime subscriptions for sync
+## Phase 2: Core Inventory CRUD ← CURRENT
+- [x] Build UI for manual entry, location viewing, and status toggling
+- [x] Implement realtime subscriptions for sync
+- Note: Future option to add card/table view toggle as a user preference.
 
 ## Phase 3: Barcode Scanning Integration
 - [ ] Integrate html5-qrcode
