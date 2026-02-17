@@ -2,7 +2,7 @@
 
 ## Phase 1: Backend & Auth Foundation ← CURRENT
 - [x] Set up Supabase client and environment variables
-- [ ] Execute SQL to create tables and Row Level Security (RLS) policies
+- [x] Execute SQL to create tables and Row Level Security (RLS) policies
 - [ ] Implement basic Auth and Profile/Household linking
 
 ## Phase 2: Core Inventory CRUD
