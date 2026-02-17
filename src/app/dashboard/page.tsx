@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     supabase
       .from("items")
       .select(
-        "id, name, quantity, unit, expiry_date, status, location_id, category_id, locations(name), categories(name)"
+        "id, name, quantity, unit, expiry_date, status, location_id, category_id, barcode, image_url, locations(name), categories(name)"
       )
       .eq("household_id", householdId)
       .order("name"),

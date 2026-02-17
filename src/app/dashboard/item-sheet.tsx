@@ -31,7 +31,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createItem, updateItem, deleteItem } from "@/app/dashboard/actions";
-import type { GroupedItem, LocationRow, CategoryRow, ItemFormValues } from "@/lib/types";
+import type {
+  GroupedItem,
+  LocationRow,
+  CategoryRow,
+  ItemFormValues,
+  ScanResult,
+} from "@/lib/types";
 
 const itemSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -41,6 +47,8 @@ const itemSchema = z.object({
   category_id: z.string().optional(),
   expiry_date: z.string().optional(),
   status: z.enum(["available", "low", "expired", "consumed"]),
+  barcode: z.string().optional(),
+  image_url: z.string().optional(),
 });
 
 type ItemSchema = z.infer<typeof itemSchema>;
@@ -51,6 +59,7 @@ interface ItemSheetProps {
   item?: GroupedItem;
   locations: LocationRow[];
   categories: CategoryRow[];
+  scanData?: ScanResult;
 }
 
 export function ItemSheet({
@@ -59,6 +68,7 @@ export function ItemSheet({
   item,
   locations,
   categories,
+  scanData,
 }: ItemSheetProps) {
   const isEditing = !!item;
   const [isPending, startTransition] = useTransition();
@@ -75,10 +85,12 @@ export function ItemSheet({
       category_id: "",
       expiry_date: "",
       status: "available",
+      barcode: "",
+      image_url: "",
     },
   });
 
-  // Pre-fill form when opening in edit mode
+  // Pre-fill form when opening in edit or scan mode
   useEffect(() => {
     if (open) {
       setServerError(null);
@@ -92,20 +104,24 @@ export function ItemSheet({
           category_id: item.category_id ?? "",
           expiry_date: item.expiry_date ?? "",
           status: item.status,
+          barcode: item.barcode ?? "",
+          image_url: item.image_url ?? "",
         });
       } else {
         form.reset({
-          name: "",
+          name: scanData?.name ?? "",
           quantity: 1,
           unit: "",
           location_id: "",
           category_id: "",
           expiry_date: "",
           status: "available",
+          barcode: scanData?.barcode ?? "",
+          image_url: scanData?.imageUrl ?? "",
         });
       }
     }
-  }, [open, item, form]);
+  }, [open, item, scanData, form]);
 
   function onSubmit(raw: ItemSchema) {
     setServerError(null);
@@ -118,6 +134,8 @@ export function ItemSheet({
       category_id: raw.category_id || undefined,
       expiry_date: raw.expiry_date || undefined,
       status: raw.status,
+      barcode: raw.barcode?.trim() || undefined,
+      image_url: raw.image_url?.trim() || undefined,
     };
 
     startTransition(async () => {
@@ -146,6 +164,9 @@ export function ItemSheet({
     });
   }
 
+  const showScanInfo = !isEditing && !!scanData;
+  const showProductNotFound = showScanInfo && !scanData.name;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col w-full sm:max-w-md p-0">
@@ -159,6 +180,21 @@ export function ItemSheet({
             className="flex flex-col flex-1 overflow-hidden"
           >
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              {/* Product thumbnail from scan */}
+              {showScanInfo && scanData.imageUrl && (
+                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={scanData.imageUrl}
+                    alt="Product"
+                    className="size-14 object-cover rounded"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Image from Open Food Facts
+                  </p>
+                </div>
+              )}
+
               {/* Name */}
               <FormField
                 control={form.control}
@@ -169,6 +205,16 @@ export function ItemSheet({
                     <FormControl>
                       <Input placeholder="e.g. Whole milk" {...field} />
                     </FormControl>
+                    {showProductNotFound && (
+                      <p className="text-xs text-muted-foreground">
+                        Product not found — enter name manually
+                      </p>
+                    )}
+                    {showScanInfo && (
+                      <p className="text-xs text-muted-foreground">
+                        Barcode: {scanData.barcode}
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}

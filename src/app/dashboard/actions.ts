@@ -36,6 +36,8 @@ export async function createItem(
     category_id: values.category_id ?? null,
     expiry_date: values.expiry_date ?? null,
     status: values.status,
+    barcode: values.barcode ?? null,
+    image_url: values.image_url ?? null,
   });
 
   if (error) return { error: error.message };
@@ -60,6 +62,8 @@ export async function updateItem(
       category_id: values.category_id ?? null,
       expiry_date: values.expiry_date ?? null,
       status: values.status,
+      barcode: values.barcode ?? null,
+      image_url: values.image_url ?? null,
     })
     .eq("id", id)
     .eq("household_id", householdId);

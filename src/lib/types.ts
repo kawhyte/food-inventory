@@ -8,6 +8,8 @@ export interface ItemFormValues {
   category_id?: string;
   expiry_date?: string; // ISO date string "YYYY-MM-DD" or undefined
   status: ItemStatus;
+  barcode?: string;
+  image_url?: string;
 }
 
 export interface GroupedItem {
@@ -21,6 +23,8 @@ export interface GroupedItem {
   category_id: string | null;
   locations: { name: string } | null;
   categories: { name: string } | null;
+  barcode: string | null;
+  image_url: string | null;
 }
 
 export interface LocationRow {
@@ -31,4 +35,10 @@ export interface LocationRow {
 export interface CategoryRow {
   id: string;
   name: string;
+}
+
+export interface ScanResult {
+  barcode: string;
+  name?: string;
+  imageUrl?: string;
 }

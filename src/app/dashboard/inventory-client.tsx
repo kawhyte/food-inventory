@@ -2,15 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, ShoppingBasket, LogOut } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Plus, ShoppingBasket, LogOut, ScanLine, Loader2 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
+import { fetchProductByBarcode } from "@/lib/openfoodfacts";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ItemSheet } from "@/app/dashboard/item-sheet";
 import { ItemRow } from "@/app/dashboard/item-row";
 import { signOut } from "@/app/auth/actions";
-import type { GroupedItem, LocationRow, CategoryRow } from "@/lib/types";
+import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
+
+const BarcodeScanner = dynamic(
+  () => import("./barcode-scanner").then((m) => ({ default: m.BarcodeScanner })),
+  { ssr: false }
+);
 
 interface InventoryClientProps {
   groupedItems: Record<string, GroupedItem[]>;
@@ -28,6 +35,9 @@ export function InventoryClient({
   const router = useRouter();
   const [addSheetOpen, setAddSheetOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GroupedItem | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [isFetchingProduct, setIsFetchingProduct] = useState(false);
+  const [scanData, setScanData] = useState<ScanResult | null>(null);
 
   // Realtime subscription — refresh page data when items change
   useEffect(() => {
@@ -53,6 +63,23 @@ export function InventoryClient({
     };
   }, [householdId, router]);
 
+  async function handleScan(barcode: string) {
+    setScannerOpen(false);
+    setIsFetchingProduct(true);
+    const result = await fetchProductByBarcode(barcode);
+    setIsFetchingProduct(false);
+    setScanData(result);
+    setAddSheetOpen(true);
+  }
+
+  function handleSheetClose(open: boolean) {
+    if (!open) {
+      setAddSheetOpen(false);
+      setEditingItem(null);
+      setScanData(null);
+    }
+  }
+
   const locationNames = Object.keys(groupedItems).sort();
   const hasItems = locationNames.length > 0;
 
@@ -65,7 +92,21 @@ export function InventoryClient({
           Food Inventory
         </h1>
         <div className="flex items-center gap-2">
-          <Button size="sm" onClick={() => setAddSheetOpen(true)}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setScannerOpen(true)}
+            disabled={isFetchingProduct}
+            title="Scan barcode"
+          >
+            {isFetchingProduct ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <ScanLine className="size-4" />
+            )}
+            <span className="sr-only">Scan barcode</span>
+          </Button>
+          <Button size="sm" onClick={() => { setScanData(null); setAddSheetOpen(true); }}>
             <Plus className="size-4" />
             Add item
           </Button>
@@ -89,10 +130,16 @@ export function InventoryClient({
                 Add your first item to get started.
               </p>
             </div>
-            <Button onClick={() => setAddSheetOpen(true)}>
-              <Plus className="size-4" />
-              Add item
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setScannerOpen(true)}>
+                <ScanLine className="size-4" />
+                Scan barcode
+              </Button>
+              <Button onClick={() => { setScanData(null); setAddSheetOpen(true); }}>
+                <Plus className="size-4" />
+                Add item
+              </Button>
+            </div>
           </div>
         ) : (
           locationNames.map((locationName, index) => (
@@ -120,18 +167,22 @@ export function InventoryClient({
         )}
       </div>
 
+      {/* Barcode scanner overlay */}
+      {scannerOpen && (
+        <BarcodeScanner
+          onScan={handleScan}
+          onClose={() => setScannerOpen(false)}
+        />
+      )}
+
       {/* Single shared sheet for add + edit */}
       <ItemSheet
         open={addSheetOpen || editingItem !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setAddSheetOpen(false);
-            setEditingItem(null);
-          }
-        }}
+        onOpenChange={handleSheetClose}
         item={editingItem ?? undefined}
         locations={locations}
         categories={categories}
+        scanData={scanData ?? undefined}
       />
     </main>
   );
