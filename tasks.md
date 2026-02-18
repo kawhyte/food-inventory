@@ -16,6 +16,15 @@
 - [x] Store barcode on items table (run supabase/add-barcode.sql)
 - [x] Pre-fill Add Item sheet from scan result
 
-## Phase 4: Advanced Features
+## Phase 4: Push Notifications
+- [x] Install web-push + @types/web-push
+- [x] Generate VAPID keys (set in .env.local and Vercel env vars)
+- [x] Run supabase/add-push-subscriptions.sql in Supabase SQL Editor
+- [x] Add push + notificationclick handlers to src/sw.ts
+- [x] Create src/lib/push.ts (subscribe/unsubscribe utilities)
+- [x] Create src/app/api/notify-expiring/route.ts (cron handler)
+- [x] Create vercel.json (daily cron at 18:00 UTC)
+- [x] Add Bell button to dashboard header (src/app/dashboard/inventory-client.tsx)
+
+## Phase 5: Advanced Features
 - [ ] Receipt OCR parsing
-- [ ] Push Notifications for expiring items

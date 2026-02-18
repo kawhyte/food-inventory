@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Plus, ShoppingBasket, LogOut, ScanLine, Loader2 } from "lucide-react";
+import { Plus, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { ItemSheet } from "@/app/dashboard/item-sheet";
 import { ItemRow } from "@/app/dashboard/item-row";
 import { signOut } from "@/app/auth/actions";
+import { subscribeToPush, getNotificationPermission } from "@/lib/push";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
 
 const BarcodeScanner = dynamic(
@@ -38,6 +39,9 @@ export function InventoryClient({
   const [scannerOpen, setScannerOpen] = useState(false);
   const [isFetchingProduct, setIsFetchingProduct] = useState(false);
   const [scanData, setScanData] = useState<ScanResult | null>(null);
+  const [notifPermission, setNotifPermission] = useState<
+    NotificationPermission | "unsupported"
+  >("unsupported");
 
   // Realtime subscription — refresh page data when items change
   useEffect(() => {
@@ -63,6 +67,10 @@ export function InventoryClient({
     };
   }, [householdId, router]);
 
+  useEffect(() => {
+    setNotifPermission(getNotificationPermission());
+  }, []);
+
   async function handleScan(barcode: string) {
     setScannerOpen(false);
     setIsFetchingProduct(true);
@@ -80,6 +88,11 @@ export function InventoryClient({
     }
   }
 
+  async function handleNotificationClick() {
+    const result = await subscribeToPush();
+    setNotifPermission(result);
+  }
+
   const locationNames = Object.keys(groupedItems).sort();
   const hasItems = locationNames.length > 0;
 
@@ -92,6 +105,28 @@ export function InventoryClient({
           Food Inventory
         </h1>
         <div className="flex items-center gap-2">
+          {notifPermission !== "denied" && notifPermission !== "unsupported" && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleNotificationClick}
+              disabled={notifPermission === "granted"}
+              title={notifPermission === "granted" ? "Notifications enabled" : "Enable notifications"}
+              className="relative"
+            >
+              {notifPermission === "granted" ? (
+                <BellRing className="size-4" />
+              ) : (
+                <>
+                  <Bell className="size-4" />
+                  <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-blue-500" />
+                </>
+              )}
+              <span className="sr-only">
+                {notifPermission === "granted" ? "Notifications enabled" : "Enable notifications"}
+              </span>
+            </Button>
+          )}
           <Button
             variant="outline"
             size="icon"
