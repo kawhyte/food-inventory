@@ -33,4 +33,11 @@
 - [x] Add createItems bulk server action to actions.ts
 - [x] Create src/app/dashboard/receipt-sheet.tsx (review + bulk add UI)
 - [x] Add ReceiptText button + file input to inventory-client.tsx
-- [ ] Implement client-side image compression for receipt uploads
+- [x] Implement client-side image compression for receipt uploads
+
+## Phase 6: Native App UI (Iteration 1 - Navigation)
+- [x] Create mobile bottom navigation bar (Inventory, Add Item, Settings).
+- [x] Create mobile Action Menu (Bottom Sheet) triggered by the "Add Item" nav button.
+- [x] Migrate "Scan Barcode", "Upload Receipt", and "Add Manually" into the Action Menu for mobile.
+- [x] Keep standalone action buttons in the top header for desktop (`md:flex`).
+- [x] Update empty state UI to reflect responsive changes.

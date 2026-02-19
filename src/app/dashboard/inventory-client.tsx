@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Plus, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X } from "lucide-react";
+import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ItemSheet } from "@/app/dashboard/item-sheet";
 import { ItemRow } from "@/app/dashboard/item-row";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
@@ -49,6 +50,7 @@ export function InventoryClient({
   const [receiptSheetOpen, setReceiptSheetOpen] = useState(false);
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Realtime subscription — refresh page data when items change
@@ -172,40 +174,43 @@ export function InventoryClient({
               </span>
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isCompressing || isParsingReceipt}
-            title={isCompressing ? "Compressing image..." : isParsingReceipt ? "Parsing receipt..." : "Scan receipt"}
-          >
-            {isCompressing || isParsingReceipt ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <ReceiptText className="size-4" />
-            )}
-            <span className="sr-only">
-              {isCompressing ? "Compressing image..." : isParsingReceipt ? "Parsing receipt..." : "Scan receipt"}
-            </span>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setScannerOpen(true)}
-            disabled={isFetchingProduct}
-            title="Scan barcode"
-          >
-            {isFetchingProduct ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <ScanLine className="size-4" />
-            )}
-            <span className="sr-only">Scan barcode</span>
-          </Button>
-          <Button size="sm" onClick={() => { setScanData(null); setAddSheetOpen(true); }}>
-            <Plus className="size-4" />
-            Add item
-          </Button>
+          {/* Desktop-only action buttons */}
+          <div className="hidden md:flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isCompressing || isParsingReceipt}
+              title={isCompressing ? "Compressing image..." : isParsingReceipt ? "Parsing receipt..." : "Scan receipt"}
+            >
+              {isCompressing || isParsingReceipt ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <ReceiptText className="size-4" />
+              )}
+              <span className="sr-only">
+                {isCompressing ? "Compressing image..." : isParsingReceipt ? "Parsing receipt..." : "Scan receipt"}
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setScannerOpen(true)}
+              disabled={isFetchingProduct}
+              title="Scan barcode"
+            >
+              {isFetchingProduct ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <ScanLine className="size-4" />
+              )}
+              <span className="sr-only">Scan barcode</span>
+            </Button>
+            <Button size="sm" onClick={() => { setScanData(null); setAddSheetOpen(true); }}>
+              <Plus className="size-4" />
+              Add item
+            </Button>
+          </div>
           <form action={signOut}>
             <Button variant="ghost" size="icon" type="submit" title="Sign out">
               <LogOut className="size-4" />
@@ -230,7 +235,7 @@ export function InventoryClient({
       )}
 
       {/* Item list */}
-      <div className="pb-8">
+      <div className="pb-24 md:pb-8">
         {!hasItems ? (
           <div className="flex flex-col items-center justify-center gap-4 py-24 px-6 text-center">
             <ShoppingBasket className="size-12 text-muted-foreground/40" />
@@ -240,7 +245,8 @@ export function InventoryClient({
                 Add your first item to get started.
               </p>
             </div>
-            <div className="flex gap-2">
+            {/* Desktop: two buttons */}
+            <div className="hidden md:flex gap-2">
               <Button variant="outline" onClick={() => setScannerOpen(true)}>
                 <ScanLine className="size-4" />
                 Scan barcode
@@ -250,6 +256,11 @@ export function InventoryClient({
                 Add item
               </Button>
             </div>
+            {/* Mobile: single CTA that opens action menu */}
+            <Button className="md:hidden" onClick={() => setActionMenuOpen(true)}>
+              <Plus className="size-4" />
+              Add to Inventory
+            </Button>
           </div>
         ) : (
           locationNames.map((locationName, index) => (
@@ -276,6 +287,44 @@ export function InventoryClient({
           ))
         )}
       </div>
+
+      {/* Mobile Action Menu */}
+      <Sheet open={actionMenuOpen} onOpenChange={setActionMenuOpen}>
+        <SheetContent side="bottom" className="md:hidden">
+          <SheetHeader>
+            <SheetTitle>Add to Inventory</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-3 pt-4 pb-2">
+            <Button
+              size="lg"
+              variant="outline"
+              className="justify-start gap-3 h-14 text-base"
+              onClick={() => { setActionMenuOpen(false); setScannerOpen(true); }}
+            >
+              <ScanLine className="size-5" />
+              Scan Barcode
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="justify-start gap-3 h-14 text-base"
+              onClick={() => { setActionMenuOpen(false); fileInputRef.current?.click(); }}
+            >
+              <ReceiptText className="size-5" />
+              Upload Receipt
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="justify-start gap-3 h-14 text-base"
+              onClick={() => { setActionMenuOpen(false); setScanData(null); setAddSheetOpen(true); }}
+            >
+              <Plus className="size-5" />
+              Add Manually
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Barcode scanner overlay */}
       {scannerOpen && (
@@ -315,6 +364,25 @@ export function InventoryClient({
           e.target.value = "";
         }}
       />
+
+      {/* Mobile bottom navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-background border-t flex items-center justify-around h-16 px-2">
+        <button className="flex flex-col items-center gap-1 text-xs text-primary px-4 py-2">
+          <Home className="size-5" />
+          <span>Inventory</span>
+        </button>
+        <button
+          onClick={() => setActionMenuOpen(true)}
+          className="flex flex-col items-center gap-1 text-xs text-muted-foreground px-4 py-2"
+        >
+          <Plus className="size-5" />
+          <span>Add Item</span>
+        </button>
+        <button className="flex flex-col items-center gap-1 text-xs text-muted-foreground px-4 py-2">
+          <Settings className="size-5" />
+          <span>Settings</span>
+        </button>
+      </nav>
     </main>
   );
 }
