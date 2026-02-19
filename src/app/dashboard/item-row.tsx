@@ -18,9 +18,10 @@ function getDaysUntilExpiry(expiryDate: string): number {
 interface ItemRowProps {
   item: GroupedItem;
   onEdit: (item: GroupedItem) => void;
+  onOpenDetail: (item: GroupedItem) => void;
 }
 
-export function ItemRow({ item, onEdit }: ItemRowProps) {
+export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
   const daysUntil =
     item.expiry_date ? getDaysUntilExpiry(item.expiry_date) : null;
 
@@ -66,7 +67,7 @@ export function ItemRow({ item, onEdit }: ItemRowProps) {
 
     // Detect click vs swipe
     if (totalDelta < 5) {
-      onEdit(item);
+      onOpenDetail(item);
       setSwipeOffset(0);
       return;
     }
@@ -167,7 +168,7 @@ export function ItemRow({ item, onEdit }: ItemRowProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={() => onEdit(item)}
+        onClick={() => onOpenDetail(item)}
         style={{ transform: `translateX(${swipeOffset}px)` }}
       >
         <div className="flex items-center justify-between gap-3">

@@ -1,23 +1,25 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Package } from "lucide-react";
+import { Package, MoreHorizontal } from "lucide-react";
 import type { GroupedItem } from "@/lib/types";
 
 interface ItemCardProps {
   item: GroupedItem;
   onEdit: (item: GroupedItem) => void;
+  onOpenDetail: (item: GroupedItem) => void;
+  onOpenActionMenu: (item: GroupedItem) => void;
 }
 
-export function ItemCard({ item, onEdit }: ItemCardProps) {
+export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemCardProps) {
   return (
-    <button
-      type="button"
-      className="w-full text-left focus-visible:outline-none"
-      onClick={() => onEdit(item)}
-    >
-      <Card className="overflow-hidden h-full flex flex-col hover:bg-muted/50 transition-colors">
+    <div className="relative">
+      <Card
+        className="overflow-hidden h-full flex flex-col hover:bg-muted/50 transition-colors cursor-pointer"
+        onClick={() => onOpenDetail(item)}
+      >
         {/* Image */}
         <div className="bg-muted flex items-center justify-center aspect-square">
           {item.image_url ? (
@@ -41,6 +43,19 @@ export function ItemCard({ item, onEdit }: ItemCardProps) {
           </div>
         </div>
       </Card>
-    </button>
+
+      {/* Context Menu Button */}
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="absolute top-2 right-2 z-10 bg-background/80 hover:bg-background"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenActionMenu(item);
+        }}
+      >
+        <MoreHorizontal className="size-4" />
+      </Button>
+    </div>
   );
 }

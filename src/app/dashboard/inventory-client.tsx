@@ -13,8 +13,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { ItemSheet } from "@/app/dashboard/item-sheet";
 import { ItemRow } from "@/app/dashboard/item-row";
 import { ItemCard } from "@/app/dashboard/item-card";
+import { ItemDetailDrawer } from "@/app/dashboard/item-detail-drawer";
+import { ItemActionMenu } from "@/app/dashboard/item-action-menu";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { signOut } from "@/app/auth/actions";
+import { deleteItem } from "@/app/dashboard/actions";
 import { subscribeToPush, getNotificationPermission } from "@/lib/push";
 import imageCompression from "browser-image-compression";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
@@ -40,6 +43,8 @@ export function InventoryClient({
   const router = useRouter();
   const [addSheetOpen, setAddSheetOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GroupedItem | null>(null);
+  const [detailItem, setDetailItem] = useState<GroupedItem | null>(null);
+  const [actionMenuItem, setActionMenuItem] = useState<GroupedItem | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [isFetchingProduct, setIsFetchingProduct] = useState(false);
   const [scanData, setScanData] = useState<ScanResult | null>(null);
@@ -99,6 +104,23 @@ export function InventoryClient({
       setEditingItem(null);
       setScanData(null);
     }
+  }
+
+  function handleEditFromDetail() {
+    if (!detailItem) return;
+    setEditingItem(detailItem);
+    setDetailItem(null);
+  }
+
+  function handleEditFromActionMenu() {
+    if (!actionMenuItem) return;
+    setEditingItem(actionMenuItem);
+    setActionMenuItem(null);
+  }
+
+  function handleDeleteFromActionMenu(item: GroupedItem) {
+    setActionMenuItem(null);
+    deleteItem(item.id);
   }
 
   async function handleNotificationClick() {
@@ -316,7 +338,7 @@ export function InventoryClient({
               </div>
               <div className="divide-y divide-border">
                 {groupedItems[locationName].map((item) => (
-                  <ItemRow key={item.id} item={item} onEdit={setEditingItem} />
+                  <ItemRow key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} />
                 ))}
               </div>
             </div>
@@ -324,7 +346,7 @@ export function InventoryClient({
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-3 py-3">
             {flatFilteredItems.map((item) => (
-              <ItemCard key={item.id} item={item} onEdit={setEditingItem} />
+              <ItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onOpenActionMenu={setActionMenuItem} />
             ))}
           </div>
         )}
@@ -395,6 +417,23 @@ export function InventoryClient({
         onOpenChange={setReceiptSheetOpen}
         items={receiptItems}
         locations={locations}
+      />
+
+      {/* Item detail drawer */}
+      <ItemDetailDrawer
+        item={detailItem}
+        open={detailItem !== null}
+        onOpenChange={(open) => !open && setDetailItem(null)}
+        onEdit={handleEditFromDetail}
+      />
+
+      {/* Item action menu */}
+      <ItemActionMenu
+        item={actionMenuItem}
+        open={actionMenuItem !== null}
+        onOpenChange={(open) => !open && setActionMenuItem(null)}
+        onEdit={handleEditFromActionMenu}
+        onDelete={handleDeleteFromActionMenu}
       />
 
       {/* Hidden file input for receipt photo */}
