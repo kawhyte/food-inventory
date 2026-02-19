@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X } from "lucide-react";
+import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X, LayoutGrid, List } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ItemSheet } from "@/app/dashboard/item-sheet";
 import { ItemRow } from "@/app/dashboard/item-row";
+import { ItemCard } from "@/app/dashboard/item-card";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { signOut } from "@/app/auth/actions";
 import { subscribeToPush, getNotificationPermission } from "@/lib/push";
@@ -51,6 +52,8 @@ export function InventoryClient({
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
+  const [activeLocation, setActiveLocation] = useState<string>("All");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Realtime subscription — refresh page data when items change
@@ -142,6 +145,9 @@ export function InventoryClient({
 
   const locationNames = Object.keys(groupedItems).sort();
   const hasItems = locationNames.length > 0;
+  const activeLocationNames =
+    activeLocation === "All" ? locationNames : locationNames.filter((l) => l === activeLocation);
+  const flatFilteredItems = activeLocationNames.flatMap((loc) => groupedItems[loc]);
 
   return (
     <main className="min-h-svh max-w-2xl mx-auto">
@@ -234,6 +240,40 @@ export function InventoryClient({
         </div>
       )}
 
+      {/* Location tabs + view toggle */}
+      {hasItems && (
+        <div className="sticky top-[57px] z-10 bg-background border-b flex items-center">
+          <div className="flex overflow-x-auto gap-1.5 px-3 py-2 flex-1 [&::-webkit-scrollbar]:hidden">
+            {["All", ...locationNames].map((loc) => (
+              <Button
+                key={loc}
+                size="sm"
+                variant={activeLocation === loc ? "default" : "ghost"}
+                className="shrink-0 text-xs h-7 px-3"
+                onClick={() => setActiveLocation(loc)}
+              >
+                {loc}
+                {loc !== "All" && (
+                  <span className="ml-1 opacity-60">({groupedItems[loc]?.length ?? 0})</span>
+                )}
+              </Button>
+            ))}
+          </div>
+          <div className="shrink-0 px-2 border-l">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+              title={viewMode === "grid" ? "Switch to list view" : "Switch to grid view"}
+            >
+              {viewMode === "grid" ? <List className="size-4" /> : <LayoutGrid className="size-4" />}
+              <span className="sr-only">{viewMode === "grid" ? "List view" : "Grid view"}</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Item list */}
       <div className="pb-24 md:pb-8">
         {!hasItems ? (
@@ -262,8 +302,8 @@ export function InventoryClient({
               Add to Inventory
             </Button>
           </div>
-        ) : (
-          locationNames.map((locationName, index) => (
+        ) : viewMode === "list" ? (
+          activeLocationNames.map((locationName, index) => (
             <div key={locationName}>
               {index > 0 && <Separator />}
               <div className="px-4 pt-5 pb-1">
@@ -276,15 +316,17 @@ export function InventoryClient({
               </div>
               <div className="divide-y divide-border">
                 {groupedItems[locationName].map((item) => (
-                  <ItemRow
-                    key={item.id}
-                    item={item}
-                    onEdit={setEditingItem}
-                  />
+                  <ItemRow key={item.id} item={item} onEdit={setEditingItem} />
                 ))}
               </div>
             </div>
           ))
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-3 py-3">
+            {flatFilteredItems.map((item) => (
+              <ItemCard key={item.id} item={item} onEdit={setEditingItem} />
+            ))}
+          </div>
         )}
       </div>
 

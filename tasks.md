@@ -41,3 +41,9 @@
 - [x] Migrate "Scan Barcode", "Upload Receipt", and "Add Manually" into the Action Menu for mobile.
 - [x] Keep standalone action buttons in the top header for desktop (`md:flex`).
 - [x] Update empty state UI to reflect responsive changes.
+
+## Phase 7: Native App UI (Iteration 2 - Item Display & Tabs)
+- [x] Create horizontal, scrollable location tabs.
+- [x] Create a `ItemCard` component for grid display (showing image, name, quantity, and status).
+- [x] Implement a Grid vs. List view toggle state in `inventory-client.tsx`.
+- [x] Apply 2-column CSS grid (`grid-cols-2`) on mobile, scaling up for desktop.
