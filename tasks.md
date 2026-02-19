@@ -56,7 +56,12 @@
 - [x] Add desktop fallback (e.g., buttons visible on hover or tap-to-edit).
 
 ## Phase 9: Native App UI (Iteration 4 - Item Details & Card Actions)
-- [ ] Create `ItemDetailDrawer.tsx` (Read-only view with high-res image and quick stats).
-- [ ] Update `ItemCard.tsx` with a `...` top-right button for Edit/Delete actions.
-- [ ] Update `ItemRow.tsx` so tapping the row opens the Detail Drawer, not the Edit form.
-- [ ] Wire up `selectedDetailItem` state in `inventory-client.tsx`.
+- [x] Create `ItemDetailDrawer.tsx` (Read-only view with high-res image and quick stats).
+- [x] Update `ItemCard.tsx` with a `...` top-right button for Edit/Delete actions.
+- [x] Update `ItemRow.tsx` so tapping the row opens the Detail Drawer, not the Edit form.
+- [x] Wire up `selectedDetailItem` state in `inventory-client.tsx`.
+
+## Phase 10: Native App UI (Iteration 5 - Fluid Animations)
+- [ ] Install `@formkit/auto-animate` for layout transitions.
+- [ ] Add `useAutoAnimate` hook to list and grid containers in `inventory-client.tsx` for smooth filtering and toggling.
+- [ ] Add tactile tap animations (`active:scale-[0.98] transition-transform`) to `ItemCard` and `ItemRow`.

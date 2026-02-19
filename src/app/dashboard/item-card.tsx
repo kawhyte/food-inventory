@@ -17,7 +17,7 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
   return (
     <div className="relative">
       <Card
-        className="overflow-hidden h-full flex flex-col hover:bg-muted/50 transition-colors cursor-pointer"
+        className="overflow-hidden h-full flex flex-col hover:bg-muted/50 transition-colors active:scale-[0.98] transition-transform duration-200 cursor-pointer"
         onClick={() => onOpenDetail(item)}
       >
         {/* Image */}

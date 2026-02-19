@@ -162,7 +162,7 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
       <button
         type="button"
         className={cn(
-          "w-full text-left px-4 py-3 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted/50 relative bg-background",
+          "w-full text-left px-4 py-3 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted/50 relative bg-background active:scale-[0.98]",
           isDragging ? "transition-none" : "transition-all duration-300"
         )}
         onTouchStart={handleTouchStart}

@@ -20,6 +20,7 @@ import { signOut } from "@/app/auth/actions";
 import { deleteItem } from "@/app/dashboard/actions";
 import { subscribeToPush, getNotificationPermission } from "@/lib/push";
 import imageCompression from "browser-image-compression";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
 
 const BarcodeScanner = dynamic(
@@ -60,6 +61,7 @@ export function InventoryClient({
   const [activeLocation, setActiveLocation] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [listRef] = useAutoAnimate();
 
   // Realtime subscription — refresh page data when items change
   useEffect(() => {
@@ -336,7 +338,7 @@ export function InventoryClient({
                   </span>
                 </h2>
               </div>
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border" ref={listRef}>
                 {groupedItems[locationName].map((item) => (
                   <ItemRow key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} />
                 ))}
@@ -344,7 +346,7 @@ export function InventoryClient({
             </div>
           ))
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-3 py-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-3 py-3" ref={listRef}>
             {flatFilteredItems.map((item) => (
               <ItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onOpenActionMenu={setActionMenuItem} />
             ))}
