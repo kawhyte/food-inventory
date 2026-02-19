@@ -65,3 +65,9 @@
 - [ ] Install `@formkit/auto-animate` for layout transitions.
 - [ ] Add `useAutoAnimate` hook to list and grid containers in `inventory-client.tsx` for smooth filtering and toggling.
 - [ ] Add tactile tap animations (`active:scale-[0.98] transition-transform`) to `ItemCard` and `ItemRow`.
+
+## Phase 11: Native App UI (Iteration 6 - Search & Sort)
+- [x] Add Search input state and Sorting dropdown state.
+- [x] Create a derived state/memo to filter and sort `groupedItems` dynamically.
+- [x] Implement Mucho-style UI: Rounded search input with integrated icon, plus a single icon button to trigger sort options.
+- [x] Handle null/empty expiry dates gracefully during sorting.

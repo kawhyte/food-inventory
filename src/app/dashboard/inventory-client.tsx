@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X, LayoutGrid, List } from "lucide-react";
+import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ItemSheet } from "@/app/dashboard/item-sheet";
@@ -60,6 +62,8 @@ export function InventoryClient({
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [activeLocation, setActiveLocation] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"name" | "expiry" | "quantity">("name");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [listRef] = useAutoAnimate();
 
@@ -167,11 +171,42 @@ export function InventoryClient({
     }
   }
 
-  const locationNames = Object.keys(groupedItems).sort();
+  // Process items: filter by search, sort, and filter by location
+  const processedGroups: Record<string, GroupedItem[]> = {};
+
+  Object.entries(groupedItems).forEach(([locationName, items]) => {
+    // Filter by search query
+    const filtered = items.filter((item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Sort the filtered items
+    let sorted = [...filtered];
+    if (sortBy === "name") {
+      sorted.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "quantity") {
+      sorted.sort((a, b) => b.quantity - a.quantity);
+    } else if (sortBy === "expiry") {
+      sorted.sort((a, b) => {
+        // Treat null/empty as last (infinity)
+        if (!a.expiry_date && !b.expiry_date) return 0;
+        if (!a.expiry_date) return 1;
+        if (!b.expiry_date) return -1;
+        return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
+      });
+    }
+
+    // Only include locations with items after filtering
+    if (sorted.length > 0) {
+      processedGroups[locationName] = sorted;
+    }
+  });
+
+  const locationNames = Object.keys(processedGroups).sort();
   const hasItems = locationNames.length > 0;
   const activeLocationNames =
     activeLocation === "All" ? locationNames : locationNames.filter((l) => l === activeLocation);
-  const flatFilteredItems = activeLocationNames.flatMap((loc) => groupedItems[loc]);
+  const flatFilteredItems = activeLocationNames.flatMap((loc) => processedGroups[loc]);
 
   return (
     <main className="min-h-svh max-w-2xl mx-auto">
@@ -264,9 +299,39 @@ export function InventoryClient({
         </div>
       )}
 
+      {/* Search and Sort */}
+      <div className="flex items-center gap-2 px-4 py-2">
+        {/* Search bar - growing container */}
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search your items"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 rounded-full bg-muted/50 border-none"
+          />
+        </div>
+
+        {/* Sort dropdown - icon button */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="rounded-full shrink-0">
+              <ArrowUpDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuRadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as "name" | "expiry" | "quantity")}>
+              <DropdownMenuRadioItem value="name">Name</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="expiry">Expiry Date</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="quantity">Quantity</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Location tabs + view toggle */}
       {hasItems && (
-        <div className="sticky top-[57px] z-10 bg-background border-b flex items-center">
+        <div className="sticky top-[101px] z-10 bg-background border-b flex items-center">
           <div className="flex overflow-x-auto gap-1.5 px-3 py-2 flex-1 [&::-webkit-scrollbar]:hidden">
             {["All", ...locationNames].map((loc) => (
               <Button
@@ -278,7 +343,7 @@ export function InventoryClient({
               >
                 {loc}
                 {loc !== "All" && (
-                  <span className="ml-1 opacity-60">({groupedItems[loc]?.length ?? 0})</span>
+                  <span className="ml-1 opacity-60">({processedGroups[loc]?.length ?? 0})</span>
                 )}
               </Button>
             ))}
@@ -334,12 +399,12 @@ export function InventoryClient({
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {locationName}
                   <span className="ml-2 font-normal normal-case">
-                    ({groupedItems[locationName].length})
+                    ({processedGroups[locationName].length})
                   </span>
                 </h2>
               </div>
               <div className="divide-y divide-border" ref={listRef}>
-                {groupedItems[locationName].map((item) => (
+                {processedGroups[locationName].map((item) => (
                   <ItemRow key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} />
                 ))}
               </div>
