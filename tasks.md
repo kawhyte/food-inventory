@@ -33,3 +33,4 @@
 - [x] Add createItems bulk server action to actions.ts
 - [x] Create src/app/dashboard/receipt-sheet.tsx (review + bulk add UI)
 - [x] Add ReceiptText button + file input to inventory-client.tsx
+- [ ] Implement client-side image compression for receipt uploads

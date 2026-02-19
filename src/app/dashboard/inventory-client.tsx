@@ -14,6 +14,7 @@ import { ItemRow } from "@/app/dashboard/item-row";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { signOut } from "@/app/auth/actions";
 import { subscribeToPush, getNotificationPermission } from "@/lib/push";
+import imageCompression from "browser-image-compression";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
 
 const BarcodeScanner = dynamic(
@@ -47,6 +48,7 @@ export function InventoryClient({
   const [receiptItems, setReceiptItems] = useState<string[]>([]);
   const [receiptSheetOpen, setReceiptSheetOpen] = useState(false);
   const [receiptError, setReceiptError] = useState<string | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Realtime subscription — refresh page data when items change
@@ -100,10 +102,26 @@ export function InventoryClient({
   }
 
   async function handleReceiptFile(file: File) {
-    setIsParsingReceipt(true);
+    setIsCompressing(true);
     setReceiptError(null);
+    let compressedFile: File;
+    try {
+      compressedFile = await imageCompression(file, {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1500,
+        useWebWorker: true,
+        initialQuality: 0.8,
+      });
+    } catch {
+      setReceiptError("Failed to compress image. Please try again.");
+      setIsCompressing(false);
+      return;
+    }
+    setIsCompressing(false);
+
+    setIsParsingReceipt(true);
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("image", compressedFile);
     try {
       const res = await fetch("/api/parse-receipt", { method: "POST", body: formData });
       const data = await res.json();
@@ -158,15 +176,17 @@ export function InventoryClient({
             variant="outline"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isParsingReceipt}
-            title="Scan receipt"
+            disabled={isCompressing || isParsingReceipt}
+            title={isCompressing ? "Compressing image..." : isParsingReceipt ? "Parsing receipt..." : "Scan receipt"}
           >
-            {isParsingReceipt ? (
+            {isCompressing || isParsingReceipt ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <ReceiptText className="size-4" />
             )}
-            <span className="sr-only">Scan receipt</span>
+            <span className="sr-only">
+              {isCompressing ? "Compressing image..." : isParsingReceipt ? "Parsing receipt..." : "Scan receipt"}
+            </span>
           </Button>
           <Button
             variant="outline"
@@ -201,7 +221,7 @@ export function InventoryClient({
           <span>{receiptError}</span>
           <button
             onClick={() => setReceiptError(null)}
-            className="flex-shrink-0 text-destructive/70 hover:text-destructive"
+            className="shrink-0 text-destructive/70 hover:text-destructive"
             aria-label="Dismiss"
           >
             <X className="size-4" />
