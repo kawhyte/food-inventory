@@ -26,5 +26,10 @@
 - [x] Create vercel.json (daily cron at 18:00 UTC)
 - [x] Add Bell button to dashboard header (src/app/dashboard/inventory-client.tsx)
 
-## Phase 5: Advanced Features
-- [ ] Receipt OCR parsing
+## Phase 5: Receipt OCR Parsing
+- [x] Install @google/generative-ai
+- [x] Add GEMINI_API_KEY to .env.local and Vercel environment variables
+- [x] Create src/app/api/parse-receipt/route.ts (Gemini 2.0 Flash image parsing)
+- [x] Add createItems bulk server action to actions.ts
+- [x] Create src/app/dashboard/receipt-sheet.tsx (review + bulk add UI)
+- [x] Add ReceiptText button + file input to inventory-client.tsx

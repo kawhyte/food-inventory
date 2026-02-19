@@ -44,6 +44,31 @@ export async function createItem(
   return {};
 }
 
+export async function createItems(
+  items: Array<{ name: string; location_id: string; expiry_date?: string }>
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const householdId = await getHouseholdId(supabase);
+  if (!householdId) return { error: "Not authenticated" };
+
+  const rows = items.map((item) => ({
+    household_id: householdId,
+    name: item.name,
+    quantity: 1,
+    unit: null,
+    location_id: item.location_id,
+    category_id: null,
+    expiry_date: item.expiry_date ?? null,
+    status: "available" as const,
+    barcode: null,
+    image_url: null,
+  }));
+
+  const { error } = await supabase.from("items").insert(rows);
+  if (error) return { error: error.message };
+  return {};
+}
+
 export async function updateItem(
   id: string,
   values: ItemFormValues

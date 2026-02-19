@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Plus, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing } from "lucide-react";
+import { Plus, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ItemSheet } from "@/app/dashboard/item-sheet";
 import { ItemRow } from "@/app/dashboard/item-row";
+import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { signOut } from "@/app/auth/actions";
 import { subscribeToPush, getNotificationPermission } from "@/lib/push";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
@@ -42,6 +43,10 @@ export function InventoryClient({
   const [notifPermission, setNotifPermission] = useState<
     NotificationPermission | "unsupported"
   >("unsupported");
+  const [isParsingReceipt, setIsParsingReceipt] = useState(false);
+  const [receiptItems, setReceiptItems] = useState<string[]>([]);
+  const [receiptSheetOpen, setReceiptSheetOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Realtime subscription — refresh page data when items change
   useEffect(() => {
@@ -93,6 +98,17 @@ export function InventoryClient({
     setNotifPermission(result);
   }
 
+  async function handleReceiptFile(file: File) {
+    setIsParsingReceipt(true);
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await fetch("/api/parse-receipt", { method: "POST", body: formData });
+    const data = await res.json();
+    setIsParsingReceipt(false);
+    setReceiptItems(data.items ?? []);
+    setReceiptSheetOpen(true);
+  }
+
   const locationNames = Object.keys(groupedItems).sort();
   const hasItems = locationNames.length > 0;
 
@@ -127,6 +143,20 @@ export function InventoryClient({
               </span>
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isParsingReceipt}
+            title="Scan receipt"
+          >
+            {isParsingReceipt ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <ReceiptText className="size-4" />
+            )}
+            <span className="sr-only">Scan receipt</span>
+          </Button>
           <Button
             variant="outline"
             size="icon"
@@ -218,6 +248,27 @@ export function InventoryClient({
         locations={locations}
         categories={categories}
         scanData={scanData ?? undefined}
+      />
+
+      {/* Receipt review sheet */}
+      <ReceiptSheet
+        open={receiptSheetOpen}
+        onOpenChange={setReceiptSheetOpen}
+        items={receiptItems}
+        locations={locations}
+      />
+
+      {/* Hidden file input for receipt photo */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleReceiptFile(file);
+          e.target.value = "";
+        }}
       />
     </main>
   );

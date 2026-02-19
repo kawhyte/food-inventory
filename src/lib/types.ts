@@ -42,3 +42,8 @@ export interface ScanResult {
   name?: string;
   imageUrl?: string;
 }
+
+export interface ReceiptItem {
+  name: string;
+  selected: boolean;
+}
