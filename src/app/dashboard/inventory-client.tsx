@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Plus, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText } from "lucide-react";
+import { Plus, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
@@ -46,6 +46,7 @@ export function InventoryClient({
   const [isParsingReceipt, setIsParsingReceipt] = useState(false);
   const [receiptItems, setReceiptItems] = useState<string[]>([]);
   const [receiptSheetOpen, setReceiptSheetOpen] = useState(false);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Realtime subscription — refresh page data when items change
@@ -100,13 +101,23 @@ export function InventoryClient({
 
   async function handleReceiptFile(file: File) {
     setIsParsingReceipt(true);
+    setReceiptError(null);
     const formData = new FormData();
     formData.append("image", file);
-    const res = await fetch("/api/parse-receipt", { method: "POST", body: formData });
-    const data = await res.json();
-    setIsParsingReceipt(false);
-    setReceiptItems(data.items ?? []);
-    setReceiptSheetOpen(true);
+    try {
+      const res = await fetch("/api/parse-receipt", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setReceiptError(data.error ?? "Failed to parse receipt.");
+        return;
+      }
+      setReceiptItems(data.items ?? []);
+      setReceiptSheetOpen(true);
+    } catch {
+      setReceiptError("Could not reach the server. Please try again.");
+    } finally {
+      setIsParsingReceipt(false);
+    }
   }
 
   const locationNames = Object.keys(groupedItems).sort();
@@ -183,6 +194,20 @@ export function InventoryClient({
           </form>
         </div>
       </div>
+
+      {/* Receipt parse error banner */}
+      {receiptError && (
+        <div className="mx-4 mt-3 text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2 flex items-start justify-between gap-2">
+          <span>{receiptError}</span>
+          <button
+            onClick={() => setReceiptError(null)}
+            className="flex-shrink-0 text-destructive/70 hover:text-destructive"
+            aria-label="Dismiss"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
 
       {/* Item list */}
       <div className="pb-8">
