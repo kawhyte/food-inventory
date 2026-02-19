@@ -11,6 +11,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetFooter,
 } from "@/components/ui/sheet";
 import {
@@ -172,6 +173,9 @@ export function ItemSheet({
       <SheetContent side="right" className="flex flex-col w-full sm:max-w-md p-0">
         <SheetHeader className="px-6 pt-6 pb-4 border-b">
           <SheetTitle>{isEditing ? "Edit item" : "Add item"}</SheetTitle>
+          <SheetDescription>
+            {isEditing ? "Update the details of this inventory item" : "Add a new item to your inventory"}
+          </SheetDescription>
         </SheetHeader>
 
         <Form {...form}>

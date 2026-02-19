@@ -8,6 +8,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetFooter,
 } from "@/components/ui/sheet";
 import {
@@ -98,6 +99,9 @@ export function ReceiptSheet({
               </span>
             )}
           </SheetTitle>
+          <SheetDescription>
+            Review and select items from your receipt to add to inventory
+          </SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">

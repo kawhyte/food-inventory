@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ItemSheet } from "@/app/dashboard/item-sheet";
 import { ItemRow } from "@/app/dashboard/item-row";
 import { ItemCard } from "@/app/dashboard/item-card";
@@ -335,6 +335,9 @@ export function InventoryClient({
         <SheetContent side="bottom" className="md:hidden">
           <SheetHeader>
             <SheetTitle>Add to Inventory</SheetTitle>
+            <SheetDescription>
+              Choose how you want to add items to your inventory
+            </SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-3 pt-4 pb-2">
             <Button

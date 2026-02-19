@@ -55,11 +55,6 @@ export function ItemRow({ item, onEdit }: ItemRowProps) {
     // Clamp to max offset
     newOffset = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, newOffset));
 
-    // Prevent vertical scroll if horizontal swipe is detected
-    if (Math.abs(deltaX) > 10) {
-      e.preventDefault();
-    }
-
     setSwipeOffset(newOffset);
   };
 
@@ -102,7 +97,7 @@ export function ItemRow({ item, onEdit }: ItemRowProps) {
   };
 
   return (
-    <div className="relative overflow-hidden group">
+    <div className="relative overflow-hidden group touch-pan-y">
       {/* Background action buttons */}
       {/* Delete button (revealed on swipe left) */}
       <div
@@ -166,7 +161,7 @@ export function ItemRow({ item, onEdit }: ItemRowProps) {
       <button
         type="button"
         className={cn(
-          "w-full text-left px-4 py-3 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted/50 relative bg-background touch-pan-y",
+          "w-full text-left px-4 py-3 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted/50 relative bg-background",
           isDragging ? "transition-none" : "transition-all duration-300"
         )}
         onTouchStart={handleTouchStart}
