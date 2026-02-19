@@ -47,3 +47,10 @@
 - [x] Create a `ItemCard` component for grid display (showing image, name, quantity, and status).
 - [x] Implement a Grid vs. List view toggle state in `inventory-client.tsx`.
 - [x] Apply 2-column CSS grid (`grid-cols-2`) on mobile, scaling up for desktop.
+
+## Phase 8: Native App UI (Iteration 3 - Swipe Gestures)
+- [x] Add touch event tracking (`onTouchStart`, `onTouchMove`, `onTouchEnd`) to `ItemRow.tsx`.
+- [x] Implement horizontal translation (slide effect) based on touch delta.
+- [x] Reveal a "Delete" action button underneath when swiping left.
+- [x] Reveal an "Edit" action button underneath when swiping right.
+- [x] Add desktop fallback (e.g., buttons visible on hover or tap-to-edit).
