@@ -47,7 +47,7 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
               <img
                 src={item.image_url}
                 alt={item.name}
-                className="w-full h-full object-contain"
+                className="w-16 h-full object-contain"
               />
             ) : (
               <Package className="size-20 text-muted-foreground/40" />

@@ -26,7 +26,7 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
             <img
               src={item.image_url}
               alt={item.name}
-              className="w-full h-full object-contain"
+              className="w-16 h-full object-contain"
             />
           ) : (
             <Package className="size-10 text-muted-foreground/40" />
