@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown } from "lucide-react";
+import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
@@ -519,19 +519,19 @@ export function InventoryClient({
       {/* Mobile bottom navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-background border-t flex items-center justify-around h-16 px-2">
         <button className="flex flex-col items-center gap-1 text-xs text-primary px-4 py-2">
-          <Home className="size-5" />
-          <span>Inventory</span>
+          <Archive className="size-5" />
+          <span>Pantry</span>
         </button>
         <button
           onClick={() => setActionMenuOpen(true)}
-          className="flex flex-col items-center gap-1 text-xs text-muted-foreground px-4 py-2"
+          className="absolute left-1/2 -translate-x-1/2 -top-5 flex items-center justify-center bg-primary text-primary-foreground rounded-full size-14 shadow-lg active:scale-95 transition-transform border-4 border-background"
         >
-          <Plus className="size-5" />
-          <span>Add Item</span>
+          <Plus className="size-6" />
         </button>
+        <div className="w-14" />
         <button className="flex flex-col items-center gap-1 text-xs text-muted-foreground px-4 py-2">
-          <Settings className="size-5" />
-          <span>Settings</span>
+          <ShoppingCart className="size-5" />
+          <span>Shopping</span>
         </button>
       </nav>
     </main>

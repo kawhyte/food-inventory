@@ -71,3 +71,7 @@
 - [x] Create a derived state/memo to filter and sort `groupedItems` dynamically.
 - [x] Implement Mucho-style UI: Rounded search input with integrated icon, plus a single icon button to trigger sort options.
 - [x] Handle null/empty expiry dates gracefully during sorting.
+
+## Phase 12: Native App UI (Iteration 7 - Bottom Nav Polish)
+- [x] Update bottom nav items to "Pantry" and "Shopping".
+- [x] Style the central "Add" button as an elevated, overlapping Floating Action Button (Mucho style).
