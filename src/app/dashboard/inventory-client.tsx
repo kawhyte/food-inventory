@@ -211,7 +211,7 @@ export function InventoryClient({
   return (
     <main className="min-h-svh max-w-2xl mx-auto">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-30 bg-background border-b px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-semibold flex items-center gap-2">
           <ShoppingBasket className="size-5 text-primary" />
           Food Inventory
@@ -300,9 +300,9 @@ export function InventoryClient({
       )}
 
       {/* Search and Sort */}
-      <div className="flex items-center gap-2 px-4 py-2">
+      <div className="flex items-center gap-2 px-4 py-2 sticky top-[57px] z-30 bg-background border-b">
         {/* Search bar - growing container */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative ">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search your items"
@@ -331,7 +331,7 @@ export function InventoryClient({
 
       {/* Location tabs + view toggle */}
       {hasItems && (
-        <div className="sticky top-[101px] z-10 bg-background border-b flex items-center">
+        <div className="sticky top-[101px] z-30 bg-background border-b flex items-center">
           <div className="flex overflow-x-auto gap-1.5 px-3 py-2 flex-1 [&::-webkit-scrollbar]:hidden">
             {["All", ...locationNames].map((loc) => (
               <Button
