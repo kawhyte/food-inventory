@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import { TriangleAlert, Trash2, Pencil } from "lucide-react";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { GroupedItem } from "@/lib/types";
@@ -159,56 +158,66 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
       </div>
 
       {/* Swipeable content */}
-      <button
-        type="button"
+      <div
         className={cn(
-          "w-full text-left px-4 py-3 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted/50 relative bg-background active:scale-[0.98]",
+          "w-full relative bg-background",
           isDragging ? "transition-none" : "transition-all duration-300"
         )}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={() => onOpenDetail(item)}
         style={{ transform: `translateX(${swipeOffset}px)` }}
       >
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-sm truncate">{item.name}</p>
-            {item.categories?.name && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {item.categories.name}
-              </p>
-            )}
-            {daysUntil !== null && (
-              <p
-                className={`text-xs mt-0.5 flex items-center gap-1 ${
-                  daysUntil <= 0
-                    ? "text-destructive"
+        <button
+          type="button"
+          className="w-full text-left flex items-center gap-4 p-3 bg-card rounded-2xl mb-2 shadow-sm border-none active:scale-[0.98] transition-transform"
+          onClick={() => onOpenDetail(item)}
+        >
+          {/* Product Image */}
+          <img
+            src={item.image_url || "https://via.placeholder.com/64?text=No+Image"}
+            alt={item.name}
+            className="w-16 h-16 rounded-xl object-cover bg-muted shrink-0"
+          />
+
+          {/* Details */}
+          <div className="flex-1 min-w-0 flex flex-col gap-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-bold text-base line-clamp-1">{item.name}</p>
+              <span className="px-2 py-1 bg-muted text-xs font-medium rounded-full shrink-0">
+                {item.quantity}{item.unit ? ` ${item.unit}` : ""}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              {item.categories?.name && (
+                <p className="text-xs text-muted-foreground truncate">
+                  {item.categories.name}
+                </p>
+              )}
+              {daysUntil !== null && (
+                <p
+                  className={`text-xs flex items-center gap-1 shrink-0 ${
+                    daysUntil <= 0
+                      ? "text-destructive"
+                      : daysUntil <= 3
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {daysUntil <= 3 && daysUntil > 0 && (
+                    <TriangleAlert className="size-3 shrink-0" />
+                  )}
+                  {daysUntil <= 0
+                    ? `Expired ${Math.abs(daysUntil)}d ago`
                     : daysUntil <= 3
-                    ? "text-amber-600 dark:text-amber-400"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {daysUntil <= 3 && daysUntil > 0 && (
-                  <TriangleAlert className="size-3 shrink-0" />
-                )}
-                {daysUntil <= 0
-                  ? `Expired ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? "s" : ""} ago`
-                  : daysUntil <= 3
-                  ? `Expires in ${daysUntil} day${daysUntil !== 1 ? "s" : ""}`
-                  : `Expires ${new Date(item.expiry_date!).toLocaleDateString()}`}
-              </p>
-            )}
+                    ? `${daysUntil}d left`
+                    : new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-sm text-muted-foreground">
-              {item.quantity}
-              {item.unit ? ` ${item.unit}` : ""}
-            </span>
-            <StatusBadge status={item.status} />
-          </div>
-        </div>
-      </button>
+        </button>
+      </div>
     </div>
   );
 }

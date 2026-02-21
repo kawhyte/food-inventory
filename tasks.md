@@ -75,3 +75,9 @@
 ## Phase 12: Native App UI (Iteration 7 - Bottom Nav Polish)
 - [x] Update bottom nav items to "Pantry" and "Shopping".
 - [x] Style the central "Add" button as an elevated, overlapping Floating Action Button (Mucho style).
+
+## Phase 13: Native App UI (Iteration 8 - Vibrant Mucho Redesign)
+- [x] Update global font to `Plus Jakarta Sans` for a bouncy, modern look.
+- [x] Update primary CSS variables to a vibrant, punchy brand color.
+- [x] Redesign `ItemRow` (List View): Image on left, details on right. Remove "Available" badge. Add Quantity/Unit.
+- [x] Redesign `ItemCard` (Grid View): Softer shadows, `rounded-3xl`, prominent image. Remove badge. Add Quantity/Unit.
