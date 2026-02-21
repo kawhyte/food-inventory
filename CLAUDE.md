@@ -37,6 +37,21 @@ The script automatically detects when you're running Node.js in x64 mode (Rosett
 
 **No manual intervention needed** - just run `npm run dev` or `npm run build` and the fix applies automatically.
 
+**If Error Returns (Manual Fix):**
+If the automated fix doesn't work:
+```bash
+# Quick fix - reinstall arm64 binaries
+rm -rf .next node_modules/.cache
+npm install --force lightningcss-darwin-arm64@1.31.1
+npm install --force @tailwindcss/oxide-darwin-arm64@4.2.0
+npm run dev
+
+# Nuclear option - reinstall everything
+rm -rf .next node_modules/.cache
+npm ci
+npm run dev
+```
+
 **Permanent Fix (Recommended):**
 Install native arm64 Node.js to eliminate the root cause:
 ```bash
@@ -53,4 +68,4 @@ rm -rf .next node_modules/.cache && npm ci
 node -e "console.log(process.arch)"  # Should show "arm64"
 ```
 
-Once you install native arm64 Node.js, the predev script will detect the correct architecture and skip the fix (no overhead).
+Once you install native arm64 Node.js, the predev/prebuild scripts will detect the correct architecture and skip the fix (no overhead).
