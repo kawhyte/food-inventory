@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { TriangleAlert, Trash2, Pencil } from "lucide-react";
+import { TriangleAlert, Trash2, Pencil, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { GroupedItem } from "@/lib/types";
@@ -174,11 +174,17 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
           onClick={() => onOpenDetail(item)}
         >
           {/* Product Image */}
-          <img
-            src={item.image_url || "https://via.placeholder.com/64?text=No+Image"}
-            alt={item.name}
-            className="w-16 h-16 rounded-xl object-cover bg-muted shrink-0"
-          />
+          {item.image_url ? (
+            <img
+              src={item.image_url}
+              alt={item.name}
+              className="w-16 h-16 rounded-2xl object-cover bg-muted shrink-0"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-muted shrink-0 flex items-center justify-center">
+              <ShoppingBag className="size-7 text-muted-foreground/40" />
+            </div>
+          )}
 
           {/* Details */}
           <div className="flex-1 min-w-0 flex flex-col gap-1">

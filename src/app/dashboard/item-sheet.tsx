@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, AlertCircle, Minus, Plus } from "lucide-react";
 
 import {
   Sheet,
@@ -207,7 +207,11 @@ export function ItemSheet({
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Whole milk" {...field} />
+                      <Input
+                        placeholder="e.g. Whole milk"
+                        {...field}
+                        className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary"
+                      />
                     </FormControl>
                     {showProductNotFound && (
                       <p className="text-xs text-muted-foreground">
@@ -233,17 +237,52 @@ export function ItemSheet({
                     <FormItem className="flex-1">
                       <FormLabel>Quantity</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="any"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === "" ? 0 : e.target.valueAsNumber
-                            )
-                          }
-                        />
+                        <div className="flex items-center gap-2">
+                          {/* Decrement Button */}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-14 w-14 rounded-2xl shrink-0"
+                            onClick={() => {
+                              const current = Number(field.value) || 0;
+                              if (current > 0) {
+                                field.onChange(current - 1);
+                              }
+                            }}
+                          >
+                            <Minus className="size-5" />
+                          </Button>
+
+                          {/* Quantity Input */}
+                          <Input
+                            type="number"
+                            inputMode="decimal"
+                            min="0"
+                            step="any"
+                            {...field}
+                            className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base text-center focus-visible:ring-primary"
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === "" ? 0 : e.target.valueAsNumber
+                              )
+                            }
+                          />
+
+                          {/* Increment Button */}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-14 w-14 rounded-2xl shrink-0"
+                            onClick={() => {
+                              const current = Number(field.value) || 0;
+                              field.onChange(current + 1);
+                            }}
+                          >
+                            <Plus className="size-5" />
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -256,7 +295,11 @@ export function ItemSheet({
                     <FormItem className="flex-1">
                       <FormLabel>Unit</FormLabel>
                       <FormControl>
-                        <Input placeholder="kg, L, pcs…" {...field} />
+                        <Input
+                          placeholder="kg, L, pcs…"
+                          {...field}
+                          className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -273,7 +316,7 @@ export function ItemSheet({
                     <FormLabel>Location</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary">
                           <SelectValue placeholder="Select location" />
                         </SelectTrigger>
                       </FormControl>
@@ -302,7 +345,7 @@ export function ItemSheet({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
@@ -327,7 +370,11 @@ export function ItemSheet({
                   <FormItem>
                     <FormLabel>Expiry date (optional)</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input
+                        type="date"
+                        {...field}
+                        className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -343,7 +390,7 @@ export function ItemSheet({
                     <FormLabel>Status</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
@@ -367,58 +414,74 @@ export function ItemSheet({
             </div>
 
             <SheetFooter className="border-t px-6 py-4">
-              {isEditing && !confirmingDelete && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive mr-auto"
-                  onClick={() => setConfirmingDelete(true)}
-                  disabled={isPending}
-                >
-                  <Trash2 className="size-4" />
-                  Delete
-                </Button>
-              )}
-
-              {confirmingDelete ? (
-                <div className="flex items-center gap-2 w-full">
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Delete this item?
-                  </p>
+              {!confirmingDelete ? (
+                <>
+                  {/* Primary Save Button */}
                   <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setConfirmingDelete(false)}
+                    type="submit"
                     disabled={isPending}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleDelete}
-                    disabled={isPending}
+                    className="w-full h-14 rounded-2xl text-lg font-semibold"
                   >
                     {isPending ? (
-                      <Loader2 className="size-4 animate-spin" />
+                      <>
+                        <Loader2 className="animate-spin size-5 mr-2" />
+                        {isEditing ? "Updating..." : "Adding..."}
+                      </>
                     ) : (
-                      "Delete"
+                      isEditing ? "Save changes" : "Add item"
                     )}
                   </Button>
-                </div>
-              ) : (
-                <Button type="submit" className="w-full" disabled={isPending}>
-                  {isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : isEditing ? (
-                    "Save changes"
-                  ) : (
-                    "Add item"
+
+                  {/* Delete Button (only for existing items) */}
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setConfirmingDelete(true)}
+                      disabled={isPending}
+                      className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 h-12 mt-2"
+                    >
+                      <Trash2 className="size-4 mr-2" />
+                      Delete item
+                    </Button>
                   )}
-                </Button>
+                </>
+              ) : (
+                <>
+                  {/* Confirmation Message */}
+                  <div className="flex items-center gap-2 w-full mb-3">
+                    <AlertCircle className="size-5 text-destructive shrink-0" />
+                    <p className="text-sm text-muted-foreground">
+                      Delete this item permanently?
+                    </p>
+                  </div>
+
+                  {/* Confirmation Actions */}
+                  <div className="flex gap-2 w-full">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setConfirmingDelete(false)}
+                      disabled={isPending}
+                      className="flex-1 h-12 rounded-2xl"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleDelete}
+                      disabled={isPending}
+                      className="flex-1 h-12 rounded-2xl"
+                    >
+                      {isPending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
+                  </div>
+                </>
               )}
             </SheetFooter>
           </form>

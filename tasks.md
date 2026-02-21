@@ -81,3 +81,10 @@
 - [x] Update primary CSS variables to a vibrant, punchy brand color.
 - [x] Redesign `ItemRow` (List View): Image on left, details on right. Remove "Available" badge. Add Quantity/Unit.
 - [x] Redesign `ItemCard` (Grid View): Softer shadows, `rounded-3xl`, prominent image. Remove badge. Add Quantity/Unit.
+
+## Phase 14: Native App UI (Iteration 9 - Detail & Edit UX)
+- [x] Add aesthetic image placeholders to Row and Card views.
+- [x] Redesign `ItemDetailDrawer`: Remove status badge, add native sheet handle, highlight relevant data.
+- [x] Redesign `ItemSheet` (Edit): Apply Mucho-style inset inputs (`bg-muted/50`, `rounded-2xl`, borderless).
+- [x] Implement `[ - ] [ qty ] [ + ]` stepper for the quantity field.
+- [x] Fix dangerous buttons: Full-width primary Save button, demote Delete to a ghost text button at the bottom.

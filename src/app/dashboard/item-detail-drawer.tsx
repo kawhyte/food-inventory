@@ -1,9 +1,9 @@
 "use client";
 
-import { Package, MapPin, TriangleAlert } from "lucide-react";
+import { ShoppingBag, MapPin, TriangleAlert } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { format } from "date-fns";
 import type { GroupedItem } from "@/lib/types";
 
 function getDaysUntilExpiry(expiryDate: string): number {
@@ -39,84 +39,59 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
           <SheetDescription>View item details and edit</SheetDescription>
         </SheetHeader>
 
+        {/* Sheet Handle */}
+        <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-muted" />
+
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
           {/* Hero Image */}
-          <div className="bg-muted flex items-center justify-center aspect-square">
+          <div className="relative h-48 bg-gradient-to-b from-muted/30 to-background rounded-b-3xl overflow-hidden">
             {item.image_url ? (
               <img
                 src={item.image_url}
                 alt={item.name}
-                className="w-16 h-full object-contain"
+                className="w-full h-full object-contain p-6"
               />
             ) : (
-              <Package className="size-20 text-muted-foreground/40" />
+              <div className="w-full h-full flex items-center justify-center">
+                <ShoppingBag className="size-20 text-muted-foreground/20" />
+              </div>
             )}
           </div>
 
-          {/* Details Section */}
-          <div className="p-6 space-y-4">
-            {/* Item Name */}
-            <h2 className="text-xl font-bold">{item.name}</h2>
-
-            {/* Location */}
-            {item.locations?.name && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="size-4" />
-                <span className="text-sm">{item.locations.name}</span>
-              </div>
+          {/* Title Section */}
+          <div className="px-6 py-4 space-y-1">
+            <h2 className="text-2xl font-bold">{item.name}</h2>
+            {item.categories && (
+              <p className="text-muted-foreground">{item.categories.name}</p>
             )}
+          </div>
 
-            {/* Quantity */}
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-medium">
-                {item.quantity}
-                {item.unit ? ` ${item.unit}` : ""}
-              </span>
+          {/* Stats Grid */}
+          <div className="px-6 grid grid-cols-2 gap-3 pb-4">
+            {/* Quantity/Unit Card */}
+            <div className="bg-muted/30 p-4 rounded-2xl space-y-1">
+              <p className="text-xs text-muted-foreground font-medium">Quantity</p>
+              <p className="text-2xl font-bold">
+                {item.quantity} {item.unit || 'units'}
+              </p>
             </div>
 
-            {/* Status */}
-            <div>
-              <StatusBadge status={item.status} />
+            {/* Expiry Date Card */}
+            <div className="bg-muted/30 p-4 rounded-2xl space-y-1">
+              <p className="text-xs text-muted-foreground font-medium">Expires</p>
+              <p className="text-base font-semibold">
+                {item.expiry_date
+                  ? format(new Date(item.expiry_date), 'MMM d, yyyy')
+                  : 'No date set'}
+              </p>
             </div>
 
-            {/* Expiry Date */}
-            {daysUntil !== null && (
-              <div
-                className={`text-sm ${
-                  daysUntil <= 0
-                    ? "text-destructive"
-                    : daysUntil <= 3
-                    ? "text-amber-600 dark:text-amber-400"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <div className="flex items-center gap-1">
-                  {daysUntil <= 3 && daysUntil > 0 && (
-                    <TriangleAlert className="size-4 shrink-0" />
-                  )}
-                  <span className="font-medium">
-                    {daysUntil <= 0
-                      ? `Expired ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? "s" : ""} ago`
-                      : daysUntil <= 3
-                      ? `Expires in ${daysUntil} day${daysUntil !== 1 ? "s" : ""}`
-                      : `Expires ${new Date(item.expiry_date!).toLocaleDateString()}`}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Category */}
-            {item.categories?.name && (
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium">Category:</span> {item.categories.name}
-              </div>
-            )}
-
-            {/* Barcode */}
-            {item.barcode && (
-              <div className="text-xs text-muted-foreground">
-                <span className="font-medium">Barcode:</span> {item.barcode}
+            {/* Location Card (full width) */}
+            {item.locations && (
+              <div className="col-span-2 bg-muted/30 p-4 rounded-2xl space-y-1">
+                <p className="text-xs text-muted-foreground font-medium">Location</p>
+                <p className="text-lg font-semibold">{item.locations.name}</p>
               </div>
             )}
           </div>

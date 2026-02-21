@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Package, MoreHorizontal, TriangleAlert } from "lucide-react";
+import { ShoppingBag, MoreHorizontal, TriangleAlert } from "lucide-react";
 import type { GroupedItem } from "@/lib/types";
 
 interface ItemCardProps {
@@ -28,17 +28,17 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
         onClick={() => onOpenDetail(item)}
       >
         {/* Image */}
-        <div className="bg-white dark:bg-slate-900 flex items-center justify-center h-32 w-full relative">
-          {item.image_url ? (
-            <img
-              src={item.image_url}
-              alt={item.name}
-              className="h-32 w-full object-contain p-4"
-            />
-          ) : (
-            <Package className="size-12 text-muted-foreground/40" />
-          )}
-        </div>
+        {item.image_url ? (
+          <img
+            src={item.image_url}
+            alt={item.name}
+            className="h-32 w-full object-contain p-4 bg-white dark:bg-slate-900 rounded-t-3xl"
+          />
+        ) : (
+          <div className="h-32 w-full bg-muted rounded-t-3xl flex items-center justify-center">
+            <ShoppingBag className="size-12 text-muted-foreground/30" />
+          </div>
+        )}
 
         {/* Content */}
         <div className="p-3 flex flex-col gap-1 flex-1">
