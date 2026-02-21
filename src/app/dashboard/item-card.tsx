@@ -1,7 +1,6 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Package, MoreHorizontal, TriangleAlert } from "lucide-react";
 import type { GroupedItem } from "@/lib/types";
 
@@ -29,12 +28,12 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
         onClick={() => onOpenDetail(item)}
       >
         {/* Image */}
-        <div className="bg-muted flex items-center justify-center h-32 w-full relative">
+        <div className="bg-white dark:bg-slate-900 flex items-center justify-center h-32 w-full relative">
           {item.image_url ? (
             <img
               src={item.image_url}
               alt={item.name}
-              className="h-full w-full object-cover"
+              className="h-32 w-full object-contain p-4"
             />
           ) : (
             <Package className="size-12 text-muted-foreground/40" />
@@ -76,17 +75,15 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
       </Card>
 
       {/* Context Menu Button */}
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur hover:bg-background"
+      <button
+        className="absolute top-2 right-2 z-10 flex items-center justify-center size-8 rounded-full bg-background/60 backdrop-blur-md border border-border/50 text-foreground shadow-sm active:scale-95 transition-all"
         onClick={(e) => {
           e.stopPropagation();
           onOpenActionMenu(item);
         }}
       >
         <MoreHorizontal className="size-4" />
-      </Button>
+      </button>
     </div>
   );
 }
