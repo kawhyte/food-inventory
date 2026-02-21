@@ -243,7 +243,7 @@ export function ItemSheet({
                             type="button"
                             variant="outline"
                             size="icon"
-                            className="h-14 w-14 rounded-2xl shrink-0"
+                            className="size-12 shrink-0 p-0 rounded-2xl"
                             onClick={() => {
                               const current = Number(field.value) || 0;
                               if (current > 0) {
@@ -261,7 +261,7 @@ export function ItemSheet({
                             min="0"
                             step="any"
                             {...field}
-                            className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base text-center focus-visible:ring-primary"
+                            className="bg-muted/50 border-transparent rounded-2xl h-14 flex-1 text-center text-lg font-semibold px-0 focus-visible:ring-primary"
                             onChange={(e) =>
                               field.onChange(
                                 e.target.value === "" ? 0 : e.target.valueAsNumber
@@ -274,7 +274,7 @@ export function ItemSheet({
                             type="button"
                             variant="outline"
                             size="icon"
-                            className="h-14 w-14 rounded-2xl shrink-0"
+                            className="size-12 shrink-0 p-0 rounded-2xl"
                             onClick={() => {
                               const current = Number(field.value) || 0;
                               field.onChange(current + 1);
