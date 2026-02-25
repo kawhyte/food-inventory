@@ -181,20 +181,26 @@ export function InventoryClient({
     );
 
     // Sort the filtered items
+    const EXPIRING_SOON_MS = 48 * 60 * 60 * 1000;
+    const now = new Date();
     let sorted = [...filtered];
-    if (sortBy === "name") {
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortBy === "quantity") {
-      sorted.sort((a, b) => b.quantity - a.quantity);
-    } else if (sortBy === "expiry") {
-      sorted.sort((a, b) => {
-        // Treat null/empty as last (infinity)
+    sorted.sort((a, b) => {
+      // Primary: expiring within 48h (including expired) floats to top
+      const aExpiring = a.expiry_date && (new Date(a.expiry_date).getTime() - now.getTime()) <= EXPIRING_SOON_MS ? 0 : 1;
+      const bExpiring = b.expiry_date && (new Date(b.expiry_date).getTime() - now.getTime()) <= EXPIRING_SOON_MS ? 0 : 1;
+      if (aExpiring !== bExpiring) return aExpiring - bExpiring;
+
+      // Secondary: apply active sortBy
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "quantity") return b.quantity - a.quantity;
+      if (sortBy === "expiry") {
         if (!a.expiry_date && !b.expiry_date) return 0;
         if (!a.expiry_date) return 1;
         if (!b.expiry_date) return -1;
         return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
-      });
-    }
+      }
+      return 0;
+    });
 
     // Only include locations with items after filtering
     if (sorted.length > 0) {

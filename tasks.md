@@ -88,3 +88,11 @@
 - [x] Redesign `ItemSheet` (Edit): Apply Mucho-style inset inputs (`bg-muted/50`, `rounded-2xl`, borderless).
 - [x] Implement `[ - ] [ qty ] [ + ]` stepper for the quantity field.
 - [x] Fix dangerous buttons: Full-width primary Save button, demote Delete to a ghost text button at the bottom.
+
+## Phase 15: Triage Flow
+- [x] Install `sonner` and wire `<Toaster position="bottom-center" />` in `layout.tsx`.
+- [x] Add `decrementItemQuantity(id, currentQuantity)` server action to `actions.ts`.
+- [x] Smart sort: expiring within 48h floats to top of each location group (primary sort), secondary sort by active `sortBy`.
+- [x] Update expiry threshold: `daysUntil <= 2` → `text-destructive font-bold`; `daysUntil === 3` → amber; in both `item-row.tsx` and `item-card.tsx`.
+- [x] Repurpose swipe-right → green Consume button (Minus icon); swipe-left → red Toss button (Trash2).
+- [x] Toss/Consume-to-zero show `"{name} removed."` toast with "Restock" action.

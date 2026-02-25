@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { TriangleAlert, Trash2, Pencil, ShoppingBag } from "lucide-react";
+import { TriangleAlert, Trash2, Pencil, ShoppingBag, Minus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { GroupedItem } from "@/lib/types";
-import { deleteItem } from "./actions";
+import { deleteItem, decrementItemQuantity } from "./actions";
 
 function getDaysUntilExpiry(expiryDate: string): number {
   const today = new Date();
@@ -27,7 +28,6 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
   // Swipe state
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const touchStartX = useRef(0);
   const currentOffset = useRef(0);
 
@@ -35,7 +35,6 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
   const MAX_OFFSET = 80;
   const SNAP_THRESHOLD = 40;
   const OPACITY_FADE_START = 20;
-  const AUTO_CLOSE_DELAY = 3000;
 
   // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -85,21 +84,33 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
     setSwipeOffset(0);
   };
 
-  const handleDelete = async () => {
-    if (!confirmDelete) {
-      setConfirmDelete(true);
-      setTimeout(() => setConfirmDelete(false), AUTO_CLOSE_DELAY);
-    } else {
-      await deleteItem(item.id);
-      setSwipeOffset(0);
-      setConfirmDelete(false);
+  const handleToss = async () => {
+    await deleteItem(item.id);
+    setSwipeOffset(0);
+    toast(`${item.name} removed.`, {
+      action: { label: "Restock", onClick: () => console.log("Added to list:", item.name) },
+    });
+  };
+
+  const handleConsume = async () => {
+    const result = await decrementItemQuantity(item.id, item.quantity);
+    setSwipeOffset(0);
+    if (result.deleted) {
+      toast(`${item.name} removed.`, {
+        action: { label: "Restock", onClick: () => console.log("Added to list:", item.name) },
+      });
     }
+  };
+
+  const handleDelete = async () => {
+    await deleteItem(item.id);
+    setSwipeOffset(0);
   };
 
   return (
     <div className="relative overflow-hidden group touch-pan-y">
       {/* Background action buttons */}
-      {/* Delete button (revealed on swipe left) */}
+      {/* Toss button (revealed on swipe left) */}
       <div
         className="absolute inset-y-0 right-0 flex items-center pr-4 transition-opacity md:hidden"
         style={{ opacity: swipeOffset < -OPACITY_FADE_START ? 1 : 0 }}
@@ -107,29 +118,24 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
         <Button
           variant="destructive"
           size="icon-sm"
-          onClick={handleDelete}
+          onClick={handleToss}
           className="pointer-events-auto"
         >
-          {confirmDelete ? (
-            <span className="text-xs font-semibold">OK?</span>
-          ) : (
-            <Trash2 className="size-4" />
-          )}
+          <Trash2 className="size-4" />
         </Button>
       </div>
 
-      {/* Edit button (revealed on swipe right) */}
+      {/* Consume button (revealed on swipe right) */}
       <div
         className="absolute inset-y-0 left-0 flex items-center pl-4 transition-opacity md:hidden"
         style={{ opacity: swipeOffset > OPACITY_FADE_START ? 1 : 0 }}
       >
         <Button
-          variant="ghost"
           size="icon-sm"
-          onClick={handleEdit}
-          className="pointer-events-auto"
+          onClick={handleConsume}
+          className="pointer-events-auto bg-green-500 hover:bg-green-600 text-white"
         >
-          <Pencil className="size-4" />
+          <Minus className="size-4" />
         </Button>
       </div>
 
@@ -149,11 +155,7 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
           onClick={handleDelete}
           className="pointer-events-auto"
         >
-          {confirmDelete ? (
-            <span className="text-[10px] font-semibold">OK?</span>
-          ) : (
-            <Trash2 className="size-3" />
-          )}
+          <Trash2 className="size-3" />
         </Button>
       </div>
 
@@ -203,14 +205,14 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
               {daysUntil !== null && (
                 <p
                   className={`text-xs flex items-center gap-1 shrink-0 ${
-                    daysUntil <= 0
-                      ? "text-destructive"
+                    daysUntil <= 2
+                      ? "text-destructive font-bold"
                       : daysUntil <= 3
                       ? "text-amber-600 dark:text-amber-400"
                       : "text-muted-foreground"
                   }`}
                 >
-                  {daysUntil <= 3 && daysUntil > 0 && (
+                  {daysUntil <= 2 && daysUntil > 0 && (
                     <TriangleAlert className="size-3 shrink-0" />
                   )}
                   {daysUntil <= 0

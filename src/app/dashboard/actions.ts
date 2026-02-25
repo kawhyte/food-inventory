@@ -97,6 +97,33 @@ export async function updateItem(
   return {};
 }
 
+export async function decrementItemQuantity(
+  id: string,
+  currentQuantity: number
+): Promise<{ deleted: boolean; error?: string }> {
+  const supabase = await createClient();
+  const householdId = await getHouseholdId(supabase);
+  if (!householdId) return { deleted: false, error: "Not authenticated" };
+
+  if (currentQuantity > 1) {
+    const { error } = await supabase
+      .from("items")
+      .update({ quantity: currentQuantity - 1 })
+      .eq("id", id)
+      .eq("household_id", householdId);
+    if (error) return { deleted: false, error: error.message };
+    return { deleted: false };
+  } else {
+    const { error } = await supabase
+      .from("items")
+      .delete()
+      .eq("id", id)
+      .eq("household_id", householdId);
+    if (error) return { deleted: false, error: error.message };
+    return { deleted: true };
+  }
+}
+
 export async function deleteItem(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
   const householdId = await getHouseholdId(supabase);

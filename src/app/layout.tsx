@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -28,6 +29,7 @@ export default function RootLayout({
         className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <Toaster position="bottom-center" />
       </body>
     </html>
   );

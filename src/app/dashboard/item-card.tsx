@@ -54,14 +54,14 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
           {daysUntil !== null && (
             <p
               className={`text-xs mt-auto flex items-center gap-1 ${
-                daysUntil <= 0
-                  ? "text-destructive"
+                daysUntil <= 2
+                  ? "text-destructive font-bold"
                   : daysUntil <= 3
                   ? "text-amber-600 dark:text-amber-400"
                   : "text-muted-foreground"
               }`}
             >
-              {daysUntil <= 3 && daysUntil > 0 && (
+              {daysUntil <= 2 && daysUntil > 0 && (
                 <TriangleAlert className="size-3 shrink-0" />
               )}
               {daysUntil <= 0
