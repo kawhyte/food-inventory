@@ -20,6 +20,7 @@ function getDaysUntilExpiry(expiryDate: string): number {
 
 export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemCardProps) {
   const daysUntil = item.expiry_date ? getDaysUntilExpiry(item.expiry_date) : null;
+  const isPast = item.expiry_date ? new Date() > new Date(item.expiry_date) : false;
 
   return (
     <div className="relative">
@@ -54,18 +55,24 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
           {daysUntil !== null && (
             <p
               className={`text-xs mt-auto flex items-center gap-1 ${
-                daysUntil <= 2
+                isPast && item.is_perishable
+                  ? "text-destructive font-bold"
+                  : isPast && !item.is_perishable
+                  ? "text-orange-500 font-medium"
+                  : daysUntil <= 2
                   ? "text-destructive font-bold"
                   : daysUntil <= 3
                   ? "text-amber-600 dark:text-amber-400"
                   : "text-muted-foreground"
               }`}
             >
-              {daysUntil <= 2 && daysUntil > 0 && (
+              {!isPast && daysUntil <= 2 && daysUntil > 0 && (
                 <TriangleAlert className="size-3 shrink-0" />
               )}
-              {daysUntil <= 0
-                ? `Expired ${Math.abs(daysUntil)}d ago`
+              {isPast && item.is_perishable
+                ? `Expired: ${new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                : isPast && !item.is_perishable
+                ? `Past Best By: ${new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
                 : daysUntil <= 3
                 ? `${daysUntil}d left`
                 : new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}

@@ -38,6 +38,7 @@ export async function createItem(
     status: values.status,
     barcode: values.barcode ?? null,
     image_url: values.image_url ?? null,
+    is_perishable: values.is_perishable ?? false,
   });
 
   if (error) return { error: error.message };
@@ -89,6 +90,7 @@ export async function updateItem(
       status: values.status,
       barcode: values.barcode ?? null,
       image_url: values.image_url ?? null,
+      is_perishable: values.is_perishable ?? false,
     })
     .eq("id", id)
     .eq("household_id", householdId);

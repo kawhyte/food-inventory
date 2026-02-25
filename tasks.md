@@ -96,3 +96,15 @@
 - [x] Update expiry threshold: `daysUntil <= 2` → `text-destructive font-bold`; `daysUntil === 3` → amber; in both `item-row.tsx` and `item-card.tsx`.
 - [x] Repurpose swipe-right → green Consume button (Minus icon); swipe-left → red Toss button (Trash2).
 - [x] Toss/Consume-to-zero show `"{name} removed."` toast with "Restock" action.
+
+## Phase 16: Strict vs. Flexible Freshness System
+- [x] Run SQL: `ALTER TABLE items ADD COLUMN is_perishable BOOLEAN DEFAULT false;`
+- [x] Add `is_perishable` to `GroupedItem` and `ItemFormValues` in `types.ts`
+- [x] Add `is_perishable` to SELECT query in `page.tsx`
+- [x] Add `is_perishable` to insert/update payloads in `actions.ts`
+- [x] Create `src/components/ui/switch.tsx` (Radix UI Switch)
+- [x] Add `is_perishable` toggle to `item-sheet.tsx` with auto-detect for fridge/cooler/refrigerator locations
+- [x] Replace expiry display in `item-row.tsx`: red "Expired:" for perishable, orange "Past Best By:" for non-perishable
+- [x] Replace expiry display in `item-card.tsx`: same red/orange pattern
+- [x] Add freshness explanation banners in `item-detail-drawer.tsx` when item is past expiry
+- [x] Update sort priority in `inventory-client.tsx`: expired+perishable (priority 0) > expiring soon (priority 1) > everything else (priority 2)

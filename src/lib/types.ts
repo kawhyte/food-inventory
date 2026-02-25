@@ -10,6 +10,7 @@ export interface ItemFormValues {
   status: ItemStatus;
   barcode?: string;
   image_url?: string;
+  is_perishable?: boolean;
 }
 
 export interface GroupedItem {
@@ -25,6 +26,7 @@ export interface GroupedItem {
   categories: { name: string } | null;
   barcode: string | null;
   image_url: string | null;
+  is_perishable: boolean | null;
 }
 
 export interface LocationRow {

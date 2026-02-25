@@ -183,12 +183,25 @@ export function InventoryClient({
     // Sort the filtered items
     const EXPIRING_SOON_MS = 48 * 60 * 60 * 1000;
     const now = new Date();
+    const nowMs = now.getTime();
     let sorted = [...filtered];
     sorted.sort((a, b) => {
-      // Primary: expiring within 48h (including expired) floats to top
-      const aExpiring = a.expiry_date && (new Date(a.expiry_date).getTime() - now.getTime()) <= EXPIRING_SOON_MS ? 0 : 1;
-      const bExpiring = b.expiry_date && (new Date(b.expiry_date).getTime() - now.getTime()) <= EXPIRING_SOON_MS ? 0 : 1;
-      if (aExpiring !== bExpiring) return aExpiring - bExpiring;
+      // Priority 0: expired AND perishable (hard expiration — always top)
+      // Priority 1: expiring within 48h but not yet expired
+      // Priority 2: everything else (including past-best-by orange items)
+      const aMs = a.expiry_date ? new Date(a.expiry_date).getTime() : null;
+      const bMs = b.expiry_date ? new Date(b.expiry_date).getTime() : null;
+
+      const getPriority = (ms: number | null, isPerishable: boolean | null) => {
+        if (ms === null) return 2;
+        if (ms < nowMs && isPerishable) return 0;
+        if (ms - nowMs <= EXPIRING_SOON_MS) return 1;
+        return 2;
+      };
+
+      const aPriority = getPriority(aMs, a.is_perishable);
+      const bPriority = getPriority(bMs, b.is_perishable);
+      if (aPriority !== bPriority) return aPriority - bPriority;
 
       // Secondary: apply active sortBy
       if (sortBy === "name") return a.name.localeCompare(b.name);

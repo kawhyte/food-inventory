@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Trash2, AlertCircle, Minus, Plus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 import {
   Sheet,
@@ -50,6 +52,7 @@ const itemSchema = z.object({
   status: z.enum(["available", "low", "expired", "consumed"]),
   barcode: z.string().optional(),
   image_url: z.string().optional(),
+  is_perishable: z.boolean(),
 });
 
 type ItemSchema = z.infer<typeof itemSchema>;
@@ -88,6 +91,7 @@ export function ItemSheet({
       status: "available",
       barcode: "",
       image_url: "",
+      is_perishable: false,
     },
   });
 
@@ -107,6 +111,7 @@ export function ItemSheet({
           status: item.status,
           barcode: item.barcode ?? "",
           image_url: item.image_url ?? "",
+          is_perishable: item.is_perishable ?? false,
         });
       } else {
         form.reset({
@@ -124,6 +129,16 @@ export function ItemSheet({
     }
   }, [open, item, scanData, form]);
 
+  // Auto-detect perishable based on location name (add mode only)
+  const watchedLocationId = form.watch("location_id");
+  useEffect(() => {
+    if (isEditing || !watchedLocationId) return;
+    const loc = locations.find((l) => l.id === watchedLocationId);
+    if (loc && /fridge|cooler|refrigerator/i.test(loc.name)) {
+      form.setValue("is_perishable", true);
+    }
+  }, [watchedLocationId, isEditing, locations, form]);
+
   function onSubmit(raw: ItemSchema) {
     setServerError(null);
 
@@ -137,6 +152,7 @@ export function ItemSheet({
       status: raw.status,
       barcode: raw.barcode?.trim() || undefined,
       image_url: raw.image_url?.trim() || undefined,
+      is_perishable: raw.is_perishable,
     };
 
     startTransition(async () => {
@@ -332,6 +348,22 @@ export function ItemSheet({
                   </FormItem>
                 )}
               />
+
+              {/* Strict Expiration Toggle */}
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl">
+                <div>
+                  <Label htmlFor="is_perishable">Strict Expiration</Label>
+                  <span className="text-xs text-muted-foreground block mt-1">
+                    Use for Meat/Dairy. Turns RED when expired.<br/>
+                    If off, turns ORANGE for &quot;Best By&quot;.
+                  </span>
+                </div>
+                <Switch
+                  id="is_perishable"
+                  checked={form.watch("is_perishable")}
+                  onCheckedChange={(val) => form.setValue("is_perishable", val)}
+                />
+              </div>
 
               {/* Category */}
               <FormField

@@ -24,6 +24,7 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
   if (!item) return null;
 
   const daysUntil = item.expiry_date ? getDaysUntilExpiry(item.expiry_date) : null;
+  const isPast = item.expiry_date ? new Date() > new Date(item.expiry_date) : false;
 
   function handleEdit() {
     if (!item) return;
@@ -69,6 +70,7 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
 
           {/* Stats Grid */}
           <div className="px-6 grid grid-cols-2 gap-3 pb-4">
+
             {/* Quantity/Unit Card */}
             <div className="bg-muted/30 p-4 rounded-2xl space-y-1">
               <p className="text-xs text-muted-foreground font-medium">Quantity</p>
@@ -95,6 +97,18 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
               </div>
             )}
           </div>
+
+          {/* Freshness banners */}
+          {isPast && item.is_perishable && (
+            <div className="mx-6 mb-4 bg-destructive/10 text-destructive p-3 rounded-xl text-sm font-medium">
+              ⚠️ This item has expired and should likely be thrown away.
+            </div>
+          )}
+          {isPast && !item.is_perishable && (
+            <div className="mx-6 mb-4 bg-orange-500/10 text-orange-600 p-3 rounded-xl text-sm font-medium">
+              ℹ️ This item is past its Best-By date, but is usually still safe to consume.
+            </div>
+          )}
         </div>
 
         {/* Footer */}
