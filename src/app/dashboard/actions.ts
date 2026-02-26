@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import type { ItemFormValues } from "@/lib/types";
+import type { ItemFormValues, GroupedItem } from "@/lib/types";
 
 async function getHouseholdId(
   supabase: Awaited<ReturnType<typeof createClient>>
@@ -136,6 +136,27 @@ export async function deleteItem(id: string): Promise<{ error?: string }> {
     .delete()
     .eq("id", id)
     .eq("household_id", householdId);
+
+  if (error) return { error: error.message };
+  return {};
+}
+
+export async function addToShoppingList(item: GroupedItem): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const householdId = await getHouseholdId(supabase);
+  if (!householdId) return { error: "Not authenticated" };
+
+  const { error } = await supabase.from("items").insert({
+    household_id: householdId,
+    name: item.name,
+    quantity: 1,
+    unit: item.unit ?? null,
+    location_id: item.location_id,
+    category_id: item.category_id ?? null,
+    status: "shopping",
+    barcode: item.barcode ?? null,
+    image_url: item.image_url ?? null,
+  });
 
   if (error) return { error: error.message };
   return {};

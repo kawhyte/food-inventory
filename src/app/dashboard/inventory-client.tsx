@@ -19,7 +19,7 @@ import { ItemDetailDrawer } from "@/app/dashboard/item-detail-drawer";
 import { ItemActionMenu } from "@/app/dashboard/item-action-menu";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { signOut } from "@/app/auth/actions";
-import { deleteItem, decrementItemQuantity } from "@/app/dashboard/actions";
+import { deleteItem, decrementItemQuantity, addToShoppingList } from "@/app/dashboard/actions";
 import { toast } from "sonner";
 import { subscribeToPush, getNotificationPermission } from "@/lib/push";
 import imageCompression from "browser-image-compression";
@@ -134,8 +134,8 @@ export function InventoryClient({
   async function handleConsume(item: GroupedItem) {
     const result = await decrementItemQuantity(item.id, item.quantity);
     if (result.deleted) {
-      toast(`${item.name} removed.`, {
-        action: { label: "Restock", onClick: () => console.log("Added to list:", item.name) },
+      toast(`${item.name} finished.`, {
+        action: { label: "Add to List", onClick: () => addToShoppingList(item) },
       });
     }
   }
@@ -143,7 +143,7 @@ export function InventoryClient({
   async function handleToss(item: GroupedItem) {
     await deleteItem(item.id);
     toast(`${item.name} removed.`, {
-      action: { label: "Restock", onClick: () => console.log("Added to list:", item.name) },
+      action: { label: "Add to List", onClick: () => addToShoppingList(item) },
     });
   }
 

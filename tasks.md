@@ -132,3 +132,9 @@
 - [x] Hide "Consume" from `ItemDetailDrawer` if `isHardExpired` is true.
 - [x] Hide "Consume" from `ItemCard` dropdown if `isHardExpired` is true.
 - [x] Disable right-swipe (Consume) on `ItemRow` if `isHardExpired` is true.
+
+## Phase 21: Native App UI (Iteration 16 - Smart Restock Flow)
+- [x] Add `'shopping'` to items status constraint via migration.
+- [x] Add `addToShoppingList` server action in `actions.ts`.
+- [x] Wire "Add to List" toast action in `handleConsume` (quantity hits 0).
+- [x] Wire "Add to List" toast action in `handleToss`.
