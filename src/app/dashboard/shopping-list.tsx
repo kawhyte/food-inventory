@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { Check, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { FastRestockDrawer } from "./fast-restock-drawer";
 import type { GroupedItem } from "@/lib/types";
 
 interface ShoppingListProps {
@@ -11,6 +13,7 @@ interface ShoppingListProps {
 
 export function ShoppingList({ items }: ShoppingListProps) {
   const [inCartIds, setInCartIds] = useState<Set<string>>(new Set());
+  const [isRestockDrawerOpen, setIsRestockDrawerOpen] = useState(false);
 
   function toggleCart(id: string) {
     setInCartIds((prev) => {
@@ -20,10 +23,7 @@ export function ShoppingList({ items }: ShoppingListProps) {
     });
   }
 
-  function handleRestock() {
-    // Phase 23: call restockItems server action
-    console.log("Restock:", Array.from(inCartIds));
-  }
+  const selectedItems = items.filter((item) => inCartIds.has(item.id));
 
   if (items.length === 0) {
     return (
@@ -84,11 +84,21 @@ export function ShoppingList({ items }: ShoppingListProps) {
         <Button
           className="w-full h-14 rounded-full text-base shadow-lg"
           disabled={inCartIds.size === 0}
-          onClick={handleRestock}
+          onClick={() => setIsRestockDrawerOpen(true)}
         >
           Restock {inCartIds.size > 0 ? inCartIds.size : ""} Item{inCartIds.size !== 1 ? "s" : ""} to Pantry
         </Button>
       </div>
+
+      <FastRestockDrawer
+        open={isRestockDrawerOpen}
+        onOpenChange={setIsRestockDrawerOpen}
+        itemsToRestock={selectedItems}
+        onComplete={() => {
+          setInCartIds(new Set());
+          toast.success("Groceries put away!");
+        }}
+      />
     </div>
   );
 }

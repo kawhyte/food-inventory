@@ -144,3 +144,10 @@
 - [x] Create `ShoppingList` component matching Mucho's Basket design (circular checkboxes).
 - [x] Implement local "in_cart" state for checked items (strikethrough text).
 - [x] Add sticky "Restock X Items" button at the bottom of the shopping list.
+
+## Phase 23: Native App UI (Iteration 18 - Fast Restock Drawer)
+- [x] Create `FastRestockDrawer` using shadcn `Sheet`.
+- [x] Add internal state to track draft quantities and expiration dates for restocked items.
+- [x] Render Mucho-style rows with a quantity stepper and native date picker.
+- [x] Wire the "Restock X Items" button to open this drawer instead of direct DB mutation.
+- [x] Add `processRestock` server action to finalize dates, quantities, and status.

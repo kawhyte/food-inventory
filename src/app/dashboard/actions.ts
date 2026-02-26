@@ -141,6 +141,28 @@ export async function deleteItem(id: string): Promise<{ error?: string }> {
   return {};
 }
 
+export async function processRestock(
+  updates: { id: string; quantity: number; expiry_date: string }[]
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const householdId = await getHouseholdId(supabase);
+  if (!householdId) return { error: "Not authenticated" };
+
+  for (const u of updates) {
+    const { error } = await supabase
+      .from("items")
+      .update({
+        quantity: u.quantity,
+        expiry_date: u.expiry_date || null,
+        status: "available",
+      })
+      .eq("id", u.id)
+      .eq("household_id", householdId);
+    if (error) return { error: error.message };
+  }
+  return {};
+}
+
 export async function addToShoppingList(item: GroupedItem): Promise<{ error?: string }> {
   const supabase = await createClient();
   const householdId = await getHouseholdId(supabase);
