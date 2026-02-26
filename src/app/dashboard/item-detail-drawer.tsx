@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFo
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import type { GroupedItem } from "@/lib/types";
+import { getGracePeriodDays } from "@/lib/expiration-rules";
 
 function getDaysUntilExpiry(expiryDate: string): number {
   const today = new Date();
@@ -25,6 +26,12 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
 
   const daysUntil = item.expiry_date ? getDaysUntilExpiry(item.expiry_date) : null;
   const isPast = item.expiry_date ? new Date() > new Date(item.expiry_date) : false;
+  const daysPast = isPast
+    ? Math.floor((new Date().getTime() - new Date(item.expiry_date!).getTime()) / (1000 * 3600 * 24))
+    : 0;
+  const graceDays = getGracePeriodDays(item.categories?.name, item.locations?.name);
+  const isHardExpired = isPast && daysPast > graceDays;
+  const isSoftExpired = isPast && daysPast <= graceDays && graceDays > 0;
 
   function handleEdit() {
     if (!item) return;
@@ -99,12 +106,12 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
           </div>
 
           {/* Freshness banners */}
-          {isPast && item.is_perishable && (
+          {isHardExpired && (
             <div className="mx-6 mb-4 bg-destructive/10 text-destructive p-3 rounded-xl text-sm font-medium">
               ⚠️ This item has expired and should likely be thrown away.
             </div>
           )}
-          {isPast && !item.is_perishable && (
+          {isSoftExpired && (
             <div className="mx-6 mb-4 bg-orange-500/10 text-orange-600 p-3 rounded-xl text-sm font-medium">
               ℹ️ This item is past its Best-By date, but is usually still safe to consume.
             </div>

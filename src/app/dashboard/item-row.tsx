@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { GroupedItem } from "@/lib/types";
+import { getGracePeriodDays } from "@/lib/expiration-rules";
 import { deleteItem, decrementItemQuantity } from "./actions";
 
 function getDaysUntilExpiry(expiryDate: string): number {
@@ -25,6 +26,12 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
   const daysUntil =
     item.expiry_date ? getDaysUntilExpiry(item.expiry_date) : null;
   const isPast = item.expiry_date ? new Date() > new Date(item.expiry_date) : false;
+  const daysPast = isPast
+    ? Math.floor((new Date().getTime() - new Date(item.expiry_date!).getTime()) / (1000 * 3600 * 24))
+    : 0;
+  const graceDays = getGracePeriodDays(item.categories?.name, item.locations?.name);
+  const isHardExpired = isPast && daysPast > graceDays;
+  const isSoftExpired = isPast && daysPast <= graceDays && graceDays > 0;
 
   // Swipe state
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -206,25 +213,25 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
               {daysUntil !== null && (
                 <p
                   className={`text-xs flex items-center gap-1 shrink-0 ${
-                    isPast && item.is_perishable
+                    isHardExpired
                       ? "text-destructive font-bold"
-                      : isPast && !item.is_perishable
+                      : isSoftExpired
                       ? "text-orange-500 font-medium"
-                      : daysUntil <= 2
+                      : !isPast && daysUntil! <= 2
                       ? "text-destructive font-bold"
-                      : daysUntil <= 3
+                      : !isPast && daysUntil! <= 3
                       ? "text-amber-600 dark:text-amber-400"
                       : "text-muted-foreground"
                   }`}
                 >
-                  {!isPast && daysUntil <= 2 && daysUntil > 0 && (
+                  {!isPast && daysUntil! <= 2 && daysUntil! > 0 && (
                     <TriangleAlert className="size-3 shrink-0" />
                   )}
-                  {isPast && item.is_perishable
+                  {isHardExpired
                     ? `Expired: ${new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                    : isPast && !item.is_perishable
+                    : isSoftExpired
                     ? `Past Best By: ${new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                    : daysUntil <= 3
+                    : daysUntil! <= 3
                     ? `${daysUntil}d left`
                     : new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </p>

@@ -24,6 +24,7 @@ import { subscribeToPush, getNotificationPermission } from "@/lib/push";
 import imageCompression from "browser-image-compression";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
+import { getGracePeriodDays } from "@/lib/expiration-rules";
 
 const BarcodeScanner = dynamic(
   () => import("./barcode-scanner").then((m) => ({ default: m.BarcodeScanner })),
@@ -192,15 +193,20 @@ export function InventoryClient({
       const aMs = a.expiry_date ? new Date(a.expiry_date).getTime() : null;
       const bMs = b.expiry_date ? new Date(b.expiry_date).getTime() : null;
 
-      const getPriority = (ms: number | null, isPerishable: boolean | null) => {
+      const getPriority = (ms: number | null, categoryName?: string | null, locationName?: string | null) => {
         if (ms === null) return 2;
-        if (ms < nowMs && isPerishable) return 0;
+        const daysPast = ms < nowMs
+          ? Math.floor((nowMs - ms) / (1000 * 3600 * 24))
+          : 0;
+        const graceDays = getGracePeriodDays(categoryName, locationName);
+        const hardExpired = ms < nowMs && daysPast > graceDays;
+        if (hardExpired) return 0;
         if (ms - nowMs <= EXPIRING_SOON_MS) return 1;
         return 2;
       };
 
-      const aPriority = getPriority(aMs, a.is_perishable);
-      const bPriority = getPriority(bMs, b.is_perishable);
+      const aPriority = getPriority(aMs, a.categories?.name, a.locations?.name);
+      const bPriority = getPriority(bMs, b.categories?.name, b.locations?.name);
       if (aPriority !== bPriority) return aPriority - bPriority;
 
       // Secondary: apply active sortBy

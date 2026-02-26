@@ -108,3 +108,11 @@
 - [x] Replace expiry display in `item-card.tsx`: same red/orange pattern
 - [x] Add freshness explanation banners in `item-detail-drawer.tsx` when item is past expiry
 - [x] Update sort priority in `inventory-client.tsx`: expired+perishable (priority 0) > expiring soon (priority 1) > everything else (priority 2)
+
+## Phase 17: USDA Smart Expiration System
+- [x] Create `src/lib/expiration-rules.ts` with `getGracePeriodDays(categoryName, locationName)` using USDA-backed keyword matching
+- [x] Remove `is_perishable` Switch toggle and auto-detect `useEffect` from `item-sheet.tsx`
+- [x] Update `item-row.tsx`: replace `is_perishable` threshold logic with `getGracePeriodDays()`
+- [x] Update `item-card.tsx`: replace `is_perishable` threshold logic with `getGracePeriodDays()`
+- [x] Update `item-detail-drawer.tsx`: replace `is_perishable` threshold logic with `getGracePeriodDays()`
+- [x] Update `inventory-client.tsx` `getPriority()`: replace `is_perishable` with `getGracePeriodDays()` using category/location names

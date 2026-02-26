@@ -5,8 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Trash2, AlertCircle, Minus, Plus } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 
 import {
   Sheet,
@@ -128,16 +126,6 @@ export function ItemSheet({
       }
     }
   }, [open, item, scanData, form]);
-
-  // Auto-detect perishable based on location name (add mode only)
-  const watchedLocationId = form.watch("location_id");
-  useEffect(() => {
-    if (isEditing || !watchedLocationId) return;
-    const loc = locations.find((l) => l.id === watchedLocationId);
-    if (loc && /fridge|cooler|refrigerator/i.test(loc.name)) {
-      form.setValue("is_perishable", true);
-    }
-  }, [watchedLocationId, isEditing, locations, form]);
 
   function onSubmit(raw: ItemSchema) {
     setServerError(null);
@@ -348,22 +336,6 @@ export function ItemSheet({
                   </FormItem>
                 )}
               />
-
-              {/* Strict Expiration Toggle */}
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl">
-                <div>
-                  <Label htmlFor="is_perishable">Strict Expiration</Label>
-                  <span className="text-xs text-muted-foreground block mt-1">
-                    Use for Meat/Dairy. Turns RED when expired.<br/>
-                    If off, turns ORANGE for &quot;Best By&quot;.
-                  </span>
-                </div>
-                <Switch
-                  id="is_perishable"
-                  checked={form.watch("is_perishable")}
-                  onCheckedChange={(val) => form.setValue("is_perishable", val)}
-                />
-              </div>
 
               {/* Category */}
               <FormField
