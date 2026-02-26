@@ -29,6 +29,16 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
   const isHardExpired = isPast && daysPast > graceDays;
   const isSoftExpired = isPast && daysPast <= graceDays && graceDays > 0;
 
+  const formattedExpiryDate = item.expiry_date
+    ? new Date(item.expiry_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : '';
+  const safeDate = item.expiry_date
+    ? new Date(new Date(item.expiry_date).getTime() + graceDays * 24 * 60 * 60 * 1000)
+    : null;
+  const formattedSafeDate = safeDate
+    ? safeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : '';
+
   return (
     <div className="relative">
       <Card
@@ -57,7 +67,7 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
             </p>
           )}
           <p className="text-xs font-medium text-muted-foreground">
-            {item.quantity}{item.unit ? ` ${item.unit}` : ""}
+            {item.quantity} {item.unit || 'units'}
           </p>
           {daysUntil !== null && (
             <p
@@ -77,12 +87,12 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
                 <TriangleAlert className="size-3 shrink-0" />
               )}
               {isHardExpired
-                ? `Expired: ${new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                ? `Expired (Passed: ${formattedSafeDate})`
                 : isSoftExpired
-                ? `Past Best By: ${new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                ? <span>Past Best By<br/>(Safe until: {formattedSafeDate})</span>
                 : daysUntil! <= 3
                 ? `${daysUntil}d left`
-                : new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                : `Best By: ${formattedExpiryDate}`}
             </p>
           )}
         </div>

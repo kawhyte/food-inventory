@@ -33,6 +33,14 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
   const isHardExpired = isPast && daysPast > graceDays;
   const isSoftExpired = isPast && daysPast <= graceDays && graceDays > 0;
 
+  const formattedExpiryDate = item.expiry_date
+    ? format(new Date(item.expiry_date), 'MMM d, yyyy')
+    : '';
+  const safeDate = item.expiry_date
+    ? new Date(new Date(item.expiry_date).getTime() + graceDays * 24 * 60 * 60 * 1000)
+    : null;
+  const formattedSafeDate = safeDate ? format(safeDate, 'MMM d, yyyy') : '';
+
   function handleEdit() {
     if (!item) return;
     onEdit(item);
@@ -108,12 +116,12 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
           {/* Freshness banners */}
           {isHardExpired && (
             <div className="mx-6 mb-4 bg-destructive/10 text-destructive p-3 rounded-xl text-sm font-medium">
-              ⚠️ This item has expired and should likely be thrown away.
+              ⚠️ Exceeded its USDA safe-consumption window on {formattedSafeDate}. For health and safety, this should be discarded.
             </div>
           )}
           {isSoftExpired && (
             <div className="mx-6 mb-4 bg-orange-500/10 text-orange-600 p-3 rounded-xl text-sm font-medium">
-              ℹ️ This item is past its Best-By date, but is usually still safe to consume.
+              ℹ️ Passed Best-By date on {formattedExpiryDate}. Based on USDA guidelines for this category, it is still safe to consume until {formattedSafeDate}.
             </div>
           )}
         </div>

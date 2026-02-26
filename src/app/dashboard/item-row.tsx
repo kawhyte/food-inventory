@@ -33,6 +33,16 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
   const isHardExpired = isPast && daysPast > graceDays;
   const isSoftExpired = isPast && daysPast <= graceDays && graceDays > 0;
 
+  const formattedExpiryDate = item.expiry_date
+    ? new Date(item.expiry_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : '';
+  const safeDate = item.expiry_date
+    ? new Date(new Date(item.expiry_date).getTime() + graceDays * 24 * 60 * 60 * 1000)
+    : null;
+  const formattedSafeDate = safeDate
+    ? safeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : '';
+
   // Swipe state
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -201,7 +211,7 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
             <div className="flex items-center justify-between gap-2">
               <p className="font-bold text-base line-clamp-1">{item.name}</p>
               <span className="px-2 py-1 bg-muted text-xs font-medium rounded-full shrink-0">
-                {item.quantity}{item.unit ? ` ${item.unit}` : ""}
+                {item.quantity} {item.unit || 'units'}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2">
@@ -228,12 +238,12 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
                     <TriangleAlert className="size-3 shrink-0" />
                   )}
                   {isHardExpired
-                    ? `Expired: ${new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                    ? `Expired (Passed: ${formattedSafeDate})`
                     : isSoftExpired
-                    ? `Past Best By: ${new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                    ? <span>Past Best By<br/>(Safe until: {formattedSafeDate})</span>
                     : daysUntil! <= 3
                     ? `${daysUntil}d left`
-                    : new Date(item.expiry_date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    : `Best By: ${formattedExpiryDate}`}
                 </p>
               )}
             </div>

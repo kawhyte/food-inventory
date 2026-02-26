@@ -116,3 +116,9 @@
 - [x] Update `item-card.tsx`: replace `is_perishable` threshold logic with `getGracePeriodDays()`
 - [x] Update `item-detail-drawer.tsx`: replace `is_perishable` threshold logic with `getGracePeriodDays()`
 - [x] Update `inventory-client.tsx` `getPriority()`: replace `is_perishable` with `getGracePeriodDays()` using category/location names
+
+## Phase 18: Native App UI (Iteration 13 — UI Copy Clarity)
+- [x] Fix Quantity display to always include the unit (fallback to 'units').
+- [x] Calculate `safeUntilDate` based on `expiry_date` + `gracePeriodDays`.
+- [x] Update Card/Row UI to show "Safe until: [Date]" for soft-expired items.
+- [x] Update Detail Drawer banners with plain-English, date-specific USDA explanations.
