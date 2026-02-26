@@ -151,3 +151,16 @@
 - [x] Render Mucho-style rows with a quantity stepper and native date picker.
 - [x] Wire the "Restock X Items" button to open this drawer instead of direct DB mutation.
 - [x] Add `processRestock` server action to finalize dates, quantities, and status.
+
+## Phase 24: Smart Shopping UI
+- [x] Add search bar to filter shopping list items.
+- [x] Add "hide in-cart" toggle to collapse checked items.
+- [x] Group shopping list by category with collapsible headers.
+- [x] Show a progress bar reflecting checked / total items.
+
+## Phase 25: In-App Notification Center
+- [x] Create `notifications` table in Supabase (user_id, item_id, title, message, type, is_read).
+- [x] Add `AppNotification` interface to `src/lib/types.ts`.
+- [x] Add `getNotifications`, `markNotificationAsRead`, `markAllNotificationsAsRead`, `clearReadNotifications` server actions to `actions.ts`.
+- [x] Create `NotificationBell` component with unread badge and Sheet inbox.
+- [x] Place `<NotificationBell />` in the inventory header before the push-notification bell.

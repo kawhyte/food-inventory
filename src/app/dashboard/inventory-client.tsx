@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
+import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
 import { fetchProductByBarcode } from "@/lib/openfoodfacts";
@@ -266,6 +267,7 @@ export function InventoryClient({
           Food Inventory
         </h1>
         <div className="flex items-center gap-2">
+          <NotificationBell />
           {notifPermission !== "denied" && notifPermission !== "unsupported" && (
             <Button
               variant="outline"

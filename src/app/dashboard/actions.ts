@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import type { ItemFormValues, GroupedItem } from "@/lib/types";
+import type { ItemFormValues, GroupedItem, AppNotification } from "@/lib/types";
 
 async function getHouseholdId(
   supabase: Awaited<ReturnType<typeof createClient>>
@@ -182,4 +182,43 @@ export async function addToShoppingList(item: GroupedItem): Promise<{ error?: st
 
   if (error) return { error: error.message };
   return {};
+}
+
+export async function getNotifications(): Promise<AppNotification[]> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+export async function markNotificationAsRead(id: string): Promise<void> {
+  const supabase = await createClient();
+  await supabase.from("notifications").update({ is_read: true }).eq("id", id);
+}
+
+export async function markAllNotificationsAsRead(): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .eq("user_id", user.id)
+    .eq("is_read", false);
+}
+
+export async function clearReadNotifications(): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase
+    .from("notifications")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("is_read", true);
 }
