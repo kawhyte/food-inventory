@@ -19,7 +19,8 @@ import { ItemDetailDrawer } from "@/app/dashboard/item-detail-drawer";
 import { ItemActionMenu } from "@/app/dashboard/item-action-menu";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { signOut } from "@/app/auth/actions";
-import { deleteItem } from "@/app/dashboard/actions";
+import { deleteItem, decrementItemQuantity } from "@/app/dashboard/actions";
+import { toast } from "sonner";
 import { subscribeToPush, getNotificationPermission } from "@/lib/push";
 import imageCompression from "browser-image-compression";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
@@ -128,6 +129,22 @@ export function InventoryClient({
   function handleDeleteFromActionMenu(item: GroupedItem) {
     setActionMenuItem(null);
     deleteItem(item.id);
+  }
+
+  async function handleConsume(item: GroupedItem) {
+    const result = await decrementItemQuantity(item.id, item.quantity);
+    if (result.deleted) {
+      toast(`${item.name} removed.`, {
+        action: { label: "Restock", onClick: () => console.log("Added to list:", item.name) },
+      });
+    }
+  }
+
+  async function handleToss(item: GroupedItem) {
+    await deleteItem(item.id);
+    toast(`${item.name} removed.`, {
+      action: { label: "Restock", onClick: () => console.log("Added to list:", item.name) },
+    });
   }
 
   async function handleNotificationClick() {
@@ -438,7 +455,7 @@ export function InventoryClient({
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-3 py-3" ref={listRef}>
             {flatFilteredItems.map((item) => (
-              <ItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onOpenActionMenu={setActionMenuItem} />
+              <ItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onConsume={handleConsume} onToss={handleToss} />
             ))}
           </div>
         )}
@@ -517,6 +534,8 @@ export function InventoryClient({
         open={detailItem !== null}
         onOpenChange={(open) => !open && setDetailItem(null)}
         onEdit={handleEditFromDetail}
+        onConsume={handleConsume}
+        onToss={handleToss}
       />
 
       {/* Item action menu */}

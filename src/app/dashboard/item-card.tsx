@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ShoppingBag, MoreHorizontal, TriangleAlert } from "lucide-react";
 import type { GroupedItem } from "@/lib/types";
 import { getGracePeriodDays } from "@/lib/expiration-rules";
@@ -9,7 +10,8 @@ interface ItemCardProps {
   item: GroupedItem;
   onEdit: (item: GroupedItem) => void;
   onOpenDetail: (item: GroupedItem) => void;
-  onOpenActionMenu: (item: GroupedItem) => void;
+  onConsume: (item: GroupedItem) => void;
+  onToss: (item: GroupedItem) => void;
 }
 
 function getDaysUntilExpiry(expiryDate: string): number {
@@ -19,7 +21,7 @@ function getDaysUntilExpiry(expiryDate: string): number {
   return Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemCardProps) {
+export function ItemCard({ item, onEdit, onOpenDetail, onConsume, onToss }: ItemCardProps) {
   const daysUntil = item.expiry_date ? getDaysUntilExpiry(item.expiry_date) : null;
   const isPast = item.expiry_date ? new Date() > new Date(item.expiry_date) : false;
   const daysPast = isPast
@@ -99,15 +101,23 @@ export function ItemCard({ item, onEdit, onOpenDetail, onOpenActionMenu }: ItemC
       </Card>
 
       {/* Context Menu Button */}
-      <button
-        className="absolute top-2 right-2 z-10 flex items-center justify-center size-8 rounded-full bg-background/60 backdrop-blur-md border border-border/50 text-foreground shadow-sm active:scale-95 transition-all"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenActionMenu(item);
-        }}
-      >
-        <MoreHorizontal className="size-4" />
-      </button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="absolute top-2 right-2 z-10 flex items-center justify-center size-8 rounded-full bg-background/60 backdrop-blur-md border border-border/50 text-foreground shadow-sm active:scale-95 transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreHorizontal className="size-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenuItem onClick={() => onEdit(item)}>Edit</DropdownMenuItem>
+          {!isHardExpired && (
+            <DropdownMenuItem onClick={() => onConsume(item)}>Consume 1</DropdownMenuItem>
+          )}
+          <DropdownMenuItem onClick={() => onToss(item)} className="text-destructive">Toss</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

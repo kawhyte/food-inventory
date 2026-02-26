@@ -69,8 +69,9 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
     const deltaX = touchX - touchStartX.current;
     let newOffset = currentOffset.current + deltaX;
 
-    // Clamp to max offset
-    newOffset = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, newOffset));
+    // Clamp to max offset (block right-swipe for hard-expired items)
+    const maxRight = isHardExpired ? 0 : MAX_OFFSET;
+    newOffset = Math.max(-MAX_OFFSET, Math.min(maxRight, newOffset));
 
     setSwipeOffset(newOffset);
   };
@@ -143,19 +144,21 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
         </Button>
       </div>
 
-      {/* Consume button (revealed on swipe right) */}
-      <div
-        className="absolute inset-y-0 left-0 flex items-center pl-4 transition-opacity md:hidden"
-        style={{ opacity: swipeOffset > OPACITY_FADE_START ? 1 : 0 }}
-      >
-        <Button
-          size="icon-sm"
-          onClick={handleConsume}
-          className="pointer-events-auto bg-green-500 hover:bg-green-600 text-white"
+      {/* Consume button (revealed on swipe right) — hidden for hard-expired items */}
+      {!isHardExpired && (
+        <div
+          className="absolute inset-y-0 left-0 flex items-center pl-4 transition-opacity md:hidden"
+          style={{ opacity: swipeOffset > OPACITY_FADE_START ? 1 : 0 }}
         >
-          <Minus className="size-4" />
-        </Button>
-      </div>
+          <Button
+            size="icon-sm"
+            onClick={handleConsume}
+            className="pointer-events-auto bg-green-500 hover:bg-green-600 text-white"
+          >
+            <Minus className="size-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Desktop hover buttons */}
       <div className="hidden md:flex absolute inset-y-0 right-0 items-center gap-2 pr-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">

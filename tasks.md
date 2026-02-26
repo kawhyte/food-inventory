@@ -122,3 +122,13 @@
 - [x] Calculate `safeUntilDate` based on `expiry_date` + `gracePeriodDays`.
 - [x] Update Card/Row UI to show "Safe until: [Date]" for soft-expired items.
 - [x] Update Detail Drawer banners with plain-English, date-specific USDA explanations.
+
+## Phase 19: Native App UI (Iteration 14 - Card Parity)
+- [x] Pass `onConsume` and `onToss` handlers down to `ItemCard` and `ItemDetailDrawer`.
+- [x] Add "Consume 1" and "Toss" to the `ItemCard` `...` DropdownMenu.
+- [x] Add a Quick Actions button row to the `ItemDetailDrawer`.
+
+## Phase 20: Native App UI (Iteration 15 - Safety Guardrails)
+- [x] Hide "Consume" from `ItemDetailDrawer` if `isHardExpired` is true.
+- [x] Hide "Consume" from `ItemCard` dropdown if `isHardExpired` is true.
+- [x] Disable right-swipe (Consume) on `ItemRow` if `isHardExpired` is true.

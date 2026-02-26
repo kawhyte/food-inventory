@@ -19,9 +19,11 @@ interface ItemDetailDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEdit: (item: GroupedItem) => void;
+  onConsume: (item: GroupedItem) => void;
+  onToss: (item: GroupedItem) => void;
 }
 
-export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetailDrawerProps) {
+export function ItemDetailDrawer({ item, open, onOpenChange, onEdit, onConsume, onToss }: ItemDetailDrawerProps) {
   if (!item) return null;
 
   const daysUntil = item.expiry_date ? getDaysUntilExpiry(item.expiry_date) : null;
@@ -44,6 +46,18 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
   function handleEdit() {
     if (!item) return;
     onEdit(item);
+    onOpenChange(false);
+  }
+
+  function handleConsume() {
+    if (!item) return;
+    onConsume(item);
+    onOpenChange(false);
+  }
+
+  function handleToss() {
+    if (!item) return;
+    onToss(item);
     onOpenChange(false);
   }
 
@@ -127,10 +141,14 @@ export function ItemDetailDrawer({ item, open, onOpenChange, onEdit }: ItemDetai
         </div>
 
         {/* Footer */}
-        <SheetFooter className="p-6 pt-0">
-          <Button onClick={handleEdit} className="w-full">
-            Edit Details
-          </Button>
+        <SheetFooter className="p-6 pt-0 flex flex-col gap-2">
+          <div className="flex gap-2">
+            {!isHardExpired && (
+              <Button variant="outline" className="flex-1" onClick={handleConsume}>Consume 1</Button>
+            )}
+            <Button variant="outline" className={isHardExpired ? "w-full text-destructive hover:text-destructive" : "flex-1 text-destructive hover:text-destructive"} onClick={handleToss}>Toss</Button>
+          </div>
+          <Button onClick={handleEdit} className="w-full">Edit Details</Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
