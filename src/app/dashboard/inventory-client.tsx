@@ -18,6 +18,7 @@ import { ItemCard } from "@/app/dashboard/item-card";
 import { ItemDetailDrawer } from "@/app/dashboard/item-detail-drawer";
 import { ItemActionMenu } from "@/app/dashboard/item-action-menu";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
+import { ShoppingList } from "@/app/dashboard/shopping-list";
 import { signOut } from "@/app/auth/actions";
 import { deleteItem, decrementItemQuantity, addToShoppingList } from "@/app/dashboard/actions";
 import { toast } from "sonner";
@@ -62,6 +63,7 @@ export function InventoryClient({
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'pantry' | 'shopping'>('pantry');
   const [activeLocation, setActiveLocation] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -189,14 +191,19 @@ export function InventoryClient({
     }
   }
 
+  // Extract shopping items
+  const shoppingItems = Object.values(groupedItems).flat().filter(
+    (item) => item.status === 'shopping'
+  );
+
   // Process items: filter by search, sort, and filter by location
   const processedGroups: Record<string, GroupedItem[]> = {};
 
   Object.entries(groupedItems).forEach(([locationName, items]) => {
-    // Filter by search query
-    const filtered = items.filter((item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Filter shopping items out of pantry view, then filter by search query
+    const filtered = items
+      .filter((item) => item.status !== 'shopping')
+      .filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     // Sort the filtered items
     const EXPIRING_SOON_MS = 48 * 60 * 60 * 1000;
@@ -341,125 +348,131 @@ export function InventoryClient({
         </div>
       )}
 
-      {/* Search and Sort */}
-      <div className="flex items-center gap-2 px-4 py-2 sticky top-[57px] z-30 bg-background border-b">
-        {/* Search bar - growing container */}
-        <div className="flex-1 relative ">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search your items"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 rounded-full bg-muted/50 border-none"
-          />
-        </div>
-
-        {/* Sort dropdown - icon button */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="rounded-full shrink-0">
-              <ArrowUpDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuRadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as "name" | "expiry" | "quantity")}>
-              <DropdownMenuRadioItem value="name">Name</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="expiry">Expiry Date</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="quantity">Quantity</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Location tabs + view toggle */}
-      {hasItems && (
-        <div className="sticky top-[101px] z-30 bg-background border-b flex items-center">
-          <div className="flex overflow-x-auto gap-1.5 px-3 py-2 flex-1 [&::-webkit-scrollbar]:hidden">
-            {["All", ...locationNames].map((loc) => (
-              <Button
-                key={loc}
-                size="sm"
-                variant={activeLocation === loc ? "default" : "ghost"}
-                className="shrink-0 text-xs h-7 px-3"
-                onClick={() => setActiveLocation(loc)}
-              >
-                {loc}
-                {loc !== "All" && (
-                  <span className="ml-1 opacity-60">({processedGroups[loc]?.length ?? 0})</span>
-                )}
-              </Button>
-            ))}
-          </div>
-          <div className="shrink-0 px-2 border-l">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-              title={viewMode === "grid" ? "Switch to list view" : "Switch to grid view"}
-            >
-              {viewMode === "grid" ? <List className="size-4" /> : <LayoutGrid className="size-4" />}
-              <span className="sr-only">{viewMode === "grid" ? "List view" : "Grid view"}</span>
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Item list */}
-      <div className="pb-24 md:pb-8">
-        {!hasItems ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-24 px-6 text-center">
-            <ShoppingBasket className="size-12 text-muted-foreground/40" />
-            <div>
-              <p className="font-medium">No items yet</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Add your first item to get started.
-              </p>
+      {activeTab === 'pantry' ? (
+        <>
+          {/* Search and Sort */}
+          <div className="flex items-center gap-2 px-4 py-2 sticky top-[57px] z-30 bg-background border-b">
+            {/* Search bar - growing container */}
+            <div className="flex-1 relative ">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search your items"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 rounded-full bg-muted/50 border-none"
+              />
             </div>
-            {/* Desktop: two buttons */}
-            <div className="hidden md:flex gap-2">
-              <Button variant="outline" onClick={() => setScannerOpen(true)}>
-                <ScanLine className="size-4" />
-                Scan barcode
-              </Button>
-              <Button onClick={() => { setScanData(null); setAddSheetOpen(true); }}>
-                <Plus className="size-4" />
-                Add item
-              </Button>
-            </div>
-            {/* Mobile: single CTA that opens action menu */}
-            <Button className="md:hidden" onClick={() => setActionMenuOpen(true)}>
-              <Plus className="size-4" />
-              Add to Inventory
-            </Button>
+
+            {/* Sort dropdown - icon button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full shrink-0">
+                  <ArrowUpDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuRadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as "name" | "expiry" | "quantity")}>
+                  <DropdownMenuRadioItem value="name">Name</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="expiry">Expiry Date</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="quantity">Quantity</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        ) : viewMode === "list" ? (
-          activeLocationNames.map((locationName, index) => (
-            <div key={locationName}>
-              {index > 0 && <Separator />}
-              <div className="px-4 pt-5 pb-1">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {locationName}
-                  <span className="ml-2 font-normal normal-case">
-                    ({processedGroups[locationName].length})
-                  </span>
-                </h2>
-              </div>
-              <div className="divide-y divide-border" ref={listRef}>
-                {processedGroups[locationName].map((item) => (
-                  <ItemRow key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} />
+
+          {/* Location tabs + view toggle */}
+          {hasItems && (
+            <div className="sticky top-[101px] z-30 bg-background border-b flex items-center">
+              <div className="flex overflow-x-auto gap-1.5 px-3 py-2 flex-1 [&::-webkit-scrollbar]:hidden">
+                {["All", ...locationNames].map((loc) => (
+                  <Button
+                    key={loc}
+                    size="sm"
+                    variant={activeLocation === loc ? "default" : "ghost"}
+                    className="shrink-0 text-xs h-7 px-3"
+                    onClick={() => setActiveLocation(loc)}
+                  >
+                    {loc}
+                    {loc !== "All" && (
+                      <span className="ml-1 opacity-60">({processedGroups[loc]?.length ?? 0})</span>
+                    )}
+                  </Button>
                 ))}
               </div>
+              <div className="shrink-0 px-2 border-l">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+                  title={viewMode === "grid" ? "Switch to list view" : "Switch to grid view"}
+                >
+                  {viewMode === "grid" ? <List className="size-4" /> : <LayoutGrid className="size-4" />}
+                  <span className="sr-only">{viewMode === "grid" ? "List view" : "Grid view"}</span>
+                </Button>
+              </div>
             </div>
-          ))
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-3 py-3" ref={listRef}>
-            {flatFilteredItems.map((item) => (
-              <ItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onConsume={handleConsume} onToss={handleToss} />
-            ))}
+          )}
+
+          {/* Item list */}
+          <div className="pb-24 md:pb-8">
+            {!hasItems ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-24 px-6 text-center">
+                <ShoppingBasket className="size-12 text-muted-foreground/40" />
+                <div>
+                  <p className="font-medium">No items yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Add your first item to get started.
+                  </p>
+                </div>
+                {/* Desktop: two buttons */}
+                <div className="hidden md:flex gap-2">
+                  <Button variant="outline" onClick={() => setScannerOpen(true)}>
+                    <ScanLine className="size-4" />
+                    Scan barcode
+                  </Button>
+                  <Button onClick={() => { setScanData(null); setAddSheetOpen(true); }}>
+                    <Plus className="size-4" />
+                    Add item
+                  </Button>
+                </div>
+                {/* Mobile: single CTA that opens action menu */}
+                <Button className="md:hidden" onClick={() => setActionMenuOpen(true)}>
+                  <Plus className="size-4" />
+                  Add to Inventory
+                </Button>
+              </div>
+            ) : viewMode === "list" ? (
+              activeLocationNames.map((locationName, index) => (
+                <div key={locationName}>
+                  {index > 0 && <Separator />}
+                  <div className="px-4 pt-5 pb-1">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {locationName}
+                      <span className="ml-2 font-normal normal-case">
+                        ({processedGroups[locationName].length})
+                      </span>
+                    </h2>
+                  </div>
+                  <div className="divide-y divide-border" ref={listRef}>
+                    {processedGroups[locationName].map((item) => (
+                      <ItemRow key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} />
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-3 py-3" ref={listRef}>
+                {flatFilteredItems.map((item) => (
+                  <ItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onConsume={handleConsume} onToss={handleToss} />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <ShoppingList items={shoppingItems} />
+      )}
 
       {/* Mobile Action Menu */}
       <Sheet open={actionMenuOpen} onOpenChange={setActionMenuOpen}>
@@ -562,7 +575,10 @@ export function InventoryClient({
 
       {/* Mobile bottom navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-background border-t flex items-center justify-around h-16 px-2">
-        <button className="flex flex-col items-center gap-1 text-xs text-primary px-4 py-2">
+        <button
+          onClick={() => setActiveTab('pantry')}
+          className={`flex flex-col items-center gap-1 text-xs px-4 py-2 ${activeTab === 'pantry' ? 'text-primary' : 'text-muted-foreground'}`}
+        >
           <Archive className="size-5" />
           <span>Pantry</span>
         </button>
@@ -573,7 +589,10 @@ export function InventoryClient({
           <Plus className="size-6" />
         </button>
         <div className="w-14" />
-        <button className="flex flex-col items-center gap-1 text-xs text-muted-foreground px-4 py-2">
+        <button
+          onClick={() => setActiveTab('shopping')}
+          className={`flex flex-col items-center gap-1 text-xs px-4 py-2 ${activeTab === 'shopping' ? 'text-primary' : 'text-muted-foreground'}`}
+        >
           <ShoppingCart className="size-5" />
           <span>Shopping</span>
         </button>

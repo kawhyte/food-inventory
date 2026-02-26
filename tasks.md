@@ -138,3 +138,9 @@
 - [x] Add `addToShoppingList` server action in `actions.ts`.
 - [x] Wire "Add to List" toast action in `handleConsume` (quantity hits 0).
 - [x] Wire "Add to List" toast action in `handleToss`.
+
+## Phase 22: Native App UI (Iteration 17 - Shopping List View)
+- [x] Add `activeTab` state to `inventory-client` to swap between Pantry and Shopping views.
+- [x] Create `ShoppingList` component matching Mucho's Basket design (circular checkboxes).
+- [x] Implement local "in_cart" state for checked items (strikethrough text).
+- [x] Add sticky "Restock X Items" button at the bottom of the shopping list.

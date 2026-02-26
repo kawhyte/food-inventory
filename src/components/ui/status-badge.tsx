@@ -23,6 +23,11 @@ const statusConfig: Record<ItemStatus, { label: string; className: string }> = {
     className:
       "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700",
   },
+  shopping: {
+    label: "Shopping",
+    className:
+      "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
+  },
 };
 
 export function StatusBadge({ status }: { status: ItemStatus }) {
