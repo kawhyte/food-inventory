@@ -6,12 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { signUp } from "@/app/auth/actions";
 
-interface SignUpPageProps {
-  searchParams: Promise<{ error?: string; invite?: string }>;
+export const dynamic = "force-dynamic";
+
+interface Props {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function SignUpPage({ searchParams }: SignUpPageProps) {
-  const { error, invite } = await searchParams;
+export default async function SignUpPage({ searchParams }: Props) {
+  const resolvedParams = await searchParams;
+  const error = typeof resolvedParams?.error === 'string' ? resolvedParams.error : undefined;
+  const invite = typeof resolvedParams?.invite === 'string' ? resolvedParams.invite : undefined;
 
   return (
     <main className="flex min-h-svh items-center justify-center p-4">
