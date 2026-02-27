@@ -541,7 +541,7 @@ export function InventoryClient({
       />
 
       {/* Mobile bottom navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex items-center justify-around h-16 px-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex items-center justify-around h-16 px-2 relative">
         <button
           onClick={() => setActiveTab('pantry')}
           className={`flex flex-col items-center gap-1 text-xs px-4 py-2 ${activeTab === 'pantry' ? 'text-primary' : 'text-muted-foreground'}`}
@@ -549,7 +549,18 @@ export function InventoryClient({
           <Archive className="size-5" />
           <span>Pantry</span>
         </button>
+
+        {/* Breakout FAB */}
+        <button
+          className="absolute left-1/2 -translate-x-1/2 -top-5 w-14 h-14 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg border-4 border-background z-50 active:scale-95 transition-transform"
+          onClick={() => setActionMenuOpen(true)}
+        >
+          <Plus className="size-6" />
+        </button>
+
+        {/* Spacer to keep flex layout symmetric */}
         <div className="w-14" />
+
         <button
           onClick={() => setActiveTab('shopping')}
           className={`flex flex-col items-center gap-1 text-xs px-4 py-2 ${activeTab === 'shopping' ? 'text-primary' : 'text-muted-foreground'}`}
@@ -558,14 +569,6 @@ export function InventoryClient({
           <span>Shopping</span>
         </button>
       </nav>
-
-      {/* Standalone FAB — outside nav stacking context */}
-      <button
-        className="md:hidden fixed bottom-[84px] left-1/2 -translate-x-1/2 z-[9999] flex items-center justify-center bg-primary text-primary-foreground rounded-full size-14 shadow-2xl active:scale-95 transition-transform border-4 border-background"
-        onClick={() => { console.log('FAB CLICKED'); alert('FAB clicked!'); setActionMenuOpen(true); }}
-      >
-        <Plus className="size-6" />
-      </button>
     </main>
   );
 }
