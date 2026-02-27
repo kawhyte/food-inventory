@@ -222,3 +222,19 @@ export async function clearReadNotifications(): Promise<void> {
     .eq("user_id", user.id)
     .eq("is_read", true);
 }
+
+export async function savePushSubscription(
+  subscription: PushSubscriptionJSON
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  const householdId = await getHouseholdId(supabase);
+  if (!householdId) return { error: "No household" };
+
+  const { error } = await supabase.from("push_subscriptions").upsert(
+    { user_id: user.id, household_id: householdId, endpoint: subscription.endpoint, subscription },
+    { onConflict: "endpoint" }
+  );
+  return error ? { error: error.message } : {};
+}

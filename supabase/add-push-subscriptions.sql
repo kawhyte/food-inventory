@@ -16,5 +16,15 @@ create index if not exists push_subscriptions_household_idx
 
 alter table public.push_subscriptions enable row level security;
 
-create policy "push_subscriptions_own" on public.push_subscriptions
-  for all using (user_id = auth.uid());
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename  = 'push_subscriptions'
+      and policyname = 'push_subscriptions_own'
+  ) then
+    execute 'create policy "push_subscriptions_own" on public.push_subscriptions
+      for all using (user_id = auth.uid())';
+  end if;
+end $$;

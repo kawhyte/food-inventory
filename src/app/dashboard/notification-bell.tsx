@@ -17,6 +17,7 @@ import {
   markAllNotificationsAsRead,
   clearReadNotifications,
 } from "./actions";
+import { PushManager } from "./push-manager";
 
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -79,6 +80,7 @@ export function NotificationBell() {
               Clear read
             </Button>
           </div>
+          <PushManager />
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto mt-4">

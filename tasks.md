@@ -164,3 +164,12 @@
 - [x] Add `getNotifications`, `markNotificationAsRead`, `markAllNotificationsAsRead`, `clearReadNotifications` server actions to `actions.ts`.
 - [x] Create `NotificationBell` component with unread badge and Sheet inbox.
 - [x] Place `<NotificationBell />` in the inventory header before the push-notification bell.
+
+## Phase 26: Web Push & Cron
+- [x] Run `notifications` table SQL migration in Supabase SQL Editor.
+- [x] Run `supabase/add-push-subscriptions.sql` if `push_subscriptions` table doesn't exist.
+- [x] Add `savePushSubscription` server action to `actions.ts`.
+- [x] Create `PushManager` component (`push-manager.tsx`) with permission request and VAPID subscribe logic.
+- [x] Render `<PushManager />` inside `NotificationBell` sheet below action buttons.
+- [x] Enhance `/api/notify-expiring` cron to insert in-app `notifications` records per user after push sends.
+- [x] Update `vercel.json` cron schedule to `0 13 * * *` (8:00 AM EST).

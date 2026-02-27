@@ -92,10 +92,10 @@ export async function GET(request: Request) {
   ];
   const { data: allSubs } = await supabase
     .from("push_subscriptions")
-    .select("endpoint, subscription, household_id")
+    .select("endpoint, subscription, household_id, user_id")
     .in("household_id", householdIds);
 
-  const subsByHousehold = new Map<string, typeof allSubs>();
+  const subsByHousehold = new Map<string, NonNullable<typeof allSubs>>();
   for (const sub of allSubs ?? []) {
     const list = subsByHousehold.get(sub.household_id as string) ?? [];
     list.push(sub);
@@ -129,6 +129,22 @@ export async function GET(request: Request) {
           console.error("Push send failed:", err);
         }
       }
+    }
+
+    // Insert in-app notifications for each unique user in this household group
+    const uniqueUserIds = [
+      ...new Set(subs.map((s) => s.user_id as string).filter(Boolean)),
+    ];
+    if (uniqueUserIds.length > 0) {
+      const body = formatBody(names, label);
+      await supabase.from("notifications").insert(
+        uniqueUserIds.map((userId) => ({
+          user_id: userId,
+          title: "Food Inventory",
+          message: body,
+          type: "expiry",
+        }))
+      );
     }
   }
 
