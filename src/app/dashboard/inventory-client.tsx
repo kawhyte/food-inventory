@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
+import { Home, Plus, Settings, ShoppingBasket, User, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
@@ -20,7 +20,7 @@ import { ItemDetailDrawer } from "@/app/dashboard/item-detail-drawer";
 import { ItemActionMenu } from "@/app/dashboard/item-action-menu";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { ShoppingList } from "@/app/dashboard/shopping-list";
-import { signOut } from "@/app/auth/actions";
+import { ProfileSettings } from "@/app/dashboard/profile-settings";
 import { deleteItem, decrementItemQuantity, addToShoppingList } from "@/app/dashboard/actions";
 import { toast } from "sonner";
 import imageCompression from "browser-image-compression";
@@ -60,6 +60,7 @@ export function InventoryClient({
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'pantry' | 'shopping'>('pantry');
   const [activeLocation, setActiveLocation] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
@@ -292,12 +293,10 @@ export function InventoryClient({
               Add item
             </Button>
           </div>
-          <form action={signOut}>
-            <Button variant="ghost" size="icon" type="submit" title="Sign out">
-              <LogOut className="size-4" />
-              <span className="sr-only">Sign out</span>
-            </Button>
-          </form>
+          <Button variant="ghost" size="icon" onClick={() => setProfileOpen(true)} title="Account">
+            <User className="size-4" />
+            <span className="sr-only">Account</span>
+          </Button>
         </div>
       </div>
 
@@ -526,6 +525,9 @@ export function InventoryClient({
         onEdit={handleEditFromActionMenu}
         onDelete={handleDeleteFromActionMenu}
       />
+
+      {/* Profile settings sheet */}
+      <ProfileSettings open={profileOpen} onOpenChange={setProfileOpen} />
 
       {/* Hidden file input for receipt photo */}
       <input

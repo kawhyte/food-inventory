@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,11 +7,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { signUp } from "@/app/auth/actions";
 
 interface SignUpPageProps {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; invite?: string }>;
 }
 
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
-  const { error } = await searchParams;
+  const { error, invite } = await searchParams;
 
   return (
     <main className="flex min-h-svh items-center justify-center p-4">
@@ -25,7 +25,14 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
         </CardHeader>
 
         <form action={signUp}>
+          {invite && <input type="hidden" name="invite_code" value={invite} />}
           <CardContent className="space-y-4">
+            {invite && (
+              <div className="bg-primary/10 text-primary p-3 rounded-lg text-sm flex items-center gap-2">
+                <Users className="size-4 shrink-0" />
+                You&apos;ve been invited to join a household! Sign up to access the shared pantry.
+              </div>
+            )}
             {error && (
               <p className="text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">
                 {error}

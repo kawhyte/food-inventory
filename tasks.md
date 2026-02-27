@@ -178,3 +178,69 @@
 - [ ] Remove duplicate static Bell icon from the navigation UI.
 - [ ] Add anti-spam database check to `api/notify-expiring` to prevent duplicate pushes per item.
 - [ ] Add a temporary "Trigger Cron (Test)" button to the `PushManager` component.
+
+## Phase 28: Household Sharing (Magic Link)
+- [ ] Execute SQL to update `handle_new_user` trigger (see SQL below).
+- [x] Update `signUp` server action to accept `invite_code`.
+- [x] Update `sign-up/page.tsx` to read URL params and show an invite banner.
+- [x] Create `ProfileSettings` drawer with "Copy Invite Link" and "Sign Out".
+- [x] Replace LogOut button in header with User icon → opens ProfileSettings.
+
+### SQL — Run in Supabase SQL Editor
+
+```sql
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_invite_code TEXT;
+  v_household_id UUID;
+BEGIN
+  -- Check for invite code in metadata
+  v_invite_code := NEW.raw_user_meta_data->>'invite_code';
+
+  IF v_invite_code IS NOT NULL THEN
+    -- Try to find household with matching invite code
+    SELECT id INTO v_household_id
+    FROM households
+    WHERE invite_code = v_invite_code
+    LIMIT 1;
+  END IF;
+
+  IF v_household_id IS NULL THEN
+    -- No valid invite: create a new household
+    INSERT INTO households (name)
+    VALUES (COALESCE(NEW.raw_user_meta_data->>'display_name', 'My Household') || '''s Household')
+    RETURNING id INTO v_household_id;
+
+    -- Seed default locations
+    INSERT INTO locations (household_id, name) VALUES
+      (v_household_id, 'Fridge'),
+      (v_household_id, 'Freezer'),
+      (v_household_id, 'Pantry'),
+      (v_household_id, 'Counter');
+
+    -- Seed default categories
+    INSERT INTO categories (household_id, name) VALUES
+      (v_household_id, 'Dairy'),
+      (v_household_id, 'Meat'),
+      (v_household_id, 'Produce'),
+      (v_household_id, 'Beverages'),
+      (v_household_id, 'Condiments'),
+      (v_household_id, 'Snacks'),
+      (v_household_id, 'Grains'),
+      (v_household_id, 'Frozen'),
+      (v_household_id, 'Other');
+  END IF;
+
+  -- Insert profile linked to the household
+  INSERT INTO profiles (id, household_id, display_name)
+  VALUES (
+    NEW.id,
+    v_household_id,
+    COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.email)
+  );
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
