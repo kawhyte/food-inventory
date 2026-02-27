@@ -122,12 +122,14 @@ export function ItemSheet({
           status: "available",
           barcode: scanData?.barcode ?? "",
           image_url: scanData?.imageUrl ?? "",
+          is_perishable: false,
         });
       }
     }
   }, [open, item, scanData, form]);
 
   function onSubmit(raw: ItemSchema) {
+    console.log("SUBMIT TRIGGERED", raw);
     setServerError(null);
 
     const values: ItemFormValues = {

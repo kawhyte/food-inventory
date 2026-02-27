@@ -238,3 +238,18 @@ export async function savePushSubscription(
   );
   return error ? { error: error.message } : {};
 }
+
+export async function triggerCronTest(): Promise<{ sent?: number; error?: string }> {
+  const { headers } = await import("next/headers");
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return { error: "CRON_SECRET not set" };
+  const headersList = await headers();
+  const host = headersList.get("host") ?? "localhost:3000";
+  const proto = process.env.NODE_ENV === "production" ? "https" : "http";
+  const res = await fetch(`${proto}://${host}/api/notify-expiring`, {
+    headers: { Authorization: `Bearer ${secret}` },
+  });
+  const data = await res.json();
+  if (!res.ok) return { error: data.error ?? "Unknown error" };
+  return { sent: data.sent };
+}

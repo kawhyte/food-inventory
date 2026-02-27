@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { savePushSubscription } from "./actions";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { savePushSubscription, triggerCronTest } from "./actions";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -60,18 +62,29 @@ export function PushManager() {
     }
   }
 
+  async function handleTestCron() {
+    const result = await triggerCronTest();
+    if (result.error) toast.error(`Cron failed: ${result.error}`);
+    else toast.success(`Cron OK — sent: ${result.sent}`);
+  }
+
   return (
-    <div className="flex items-center justify-between px-1 py-2 mt-2 rounded-xl border bg-muted/40">
-      <Label htmlFor="push-toggle" className="text-sm cursor-pointer pl-1">
-        Push Notifications
-      </Label>
-      <Switch
-        id="push-toggle"
-        checked={enabled}
-        onCheckedChange={handleToggle}
-        disabled={loading}
-        className="mr-1"
-      />
+    <div className="space-y-2 mt-2">
+      <div className="flex items-center justify-between px-1 py-2 rounded-xl border bg-muted/40">
+        <Label htmlFor="push-toggle" className="text-sm cursor-pointer pl-1">
+          Push Notifications
+        </Label>
+        <Switch
+          id="push-toggle"
+          checked={enabled}
+          onCheckedChange={handleToggle}
+          disabled={loading}
+          className="mr-1"
+        />
+      </div>
+      <Button variant="outline" size="sm" className="w-full" onClick={handleTestCron}>
+        Test Cron Job (Dev)
+      </Button>
     </div>
   );
 }

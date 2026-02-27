@@ -173,3 +173,8 @@
 - [x] Render `<PushManager />` inside `NotificationBell` sheet below action buttons.
 - [x] Enhance `/api/notify-expiring` cron to insert in-app `notifications` records per user after push sends.
 - [x] Update `vercel.json` cron schedule to `0 13 * * *` (8:00 AM EST).
+
+## Phase 27: Native App UI (Iteration 22 - Notification Hardening & Testing)
+- [ ] Remove duplicate static Bell icon from the navigation UI.
+- [ ] Add anti-spam database check to `api/notify-expiring` to prevent duplicate pushes per item.
+- [ ] Add a temporary "Trigger Cron (Test)" button to the `PushManager` component.

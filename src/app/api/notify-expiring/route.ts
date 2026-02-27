@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
   const { data: expiringItems, error: itemsError } = await supabase
     .from("items")
-    .select("name, household_id, expiry_date")
+    .select("id, name, household_id, expiry_date")
     .in(
       "expiry_date",
       targetDates.map((t) => t.date)
@@ -65,25 +65,39 @@ export async function GET(request: Request) {
     return NextResponse.json({ sent: 0 });
   }
 
+  // Anti-spam: skip items that already have an expiration_warning notification
+  const itemIds = expiringItems.map((i) => i.id);
+  const { data: alreadyNotified } = await supabase
+    .from("notifications")
+    .select("item_id")
+    .in("item_id", itemIds)
+    .eq("type", "expiration_warning");
+  const notifiedSet = new Set(alreadyNotified?.map((n) => n.item_id) ?? []);
+  const newItems = expiringItems.filter((i) => !notifiedSet.has(i.id));
+
+  if (!newItems.length) {
+    return NextResponse.json({ sent: 0 });
+  }
+
   // Map each target date string to its label
   const dateToLabel = new Map(targetDates.map((t) => [t.date, t.label]));
 
   // Group items by household + threshold label
   const groups = new Map<
     string,
-    { householdId: string; label: string; names: string[] }
+    { householdId: string; label: string; items: typeof newItems }
   >();
-  for (const item of expiringItems) {
+  for (const item of newItems) {
     const label = dateToLabel.get(item.expiry_date as string)!;
     const key = `${item.household_id}::${label}`;
     if (!groups.has(key)) {
       groups.set(key, {
         householdId: item.household_id as string,
         label,
-        names: [],
+        items: [],
       });
     }
-    groups.get(key)!.names.push(item.name as string);
+    groups.get(key)!.items.push(item);
   }
 
   // Fetch subscriptions for all affected households in one query
@@ -105,10 +119,11 @@ export async function GET(request: Request) {
   let totalSent = 0;
   const staleEndpoints: string[] = [];
 
-  for (const { householdId, label, names } of groups.values()) {
+  for (const { householdId, label, items: groupItems } of groups.values()) {
     const subs = subsByHousehold.get(householdId);
     if (!subs?.length) continue;
 
+    const names = groupItems.map((i) => i.name as string);
     const payload = JSON.stringify({
       title: "Food Inventory",
       body: formatBody(names, label),
@@ -131,20 +146,21 @@ export async function GET(request: Request) {
       }
     }
 
-    // Insert in-app notifications for each unique user in this household group
+    // Insert in-app notifications — one record per item per user
     const uniqueUserIds = [
       ...new Set(subs.map((s) => s.user_id as string).filter(Boolean)),
     ];
     if (uniqueUserIds.length > 0) {
-      const body = formatBody(names, label);
-      await supabase.from("notifications").insert(
-        uniqueUserIds.map((userId) => ({
+      const insertRows = uniqueUserIds.flatMap((userId) =>
+        groupItems.map((item) => ({
           user_id: userId,
+          item_id: item.id,
           title: "Food Inventory",
-          message: body,
-          type: "expiry",
+          message: `${item.name} expires ${label}`,
+          type: "expiration_warning",
         }))
       );
+      await supabase.from("notifications").insert(insertRows);
     }
   }
 

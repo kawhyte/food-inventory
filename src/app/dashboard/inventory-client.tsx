@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, Bell, BellRing, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
+import { Home, Plus, Settings, ShoppingBasket, LogOut, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
@@ -23,7 +23,6 @@ import { ShoppingList } from "@/app/dashboard/shopping-list";
 import { signOut } from "@/app/auth/actions";
 import { deleteItem, decrementItemQuantity, addToShoppingList } from "@/app/dashboard/actions";
 import { toast } from "sonner";
-import { subscribeToPush, getNotificationPermission } from "@/lib/push";
 import imageCompression from "browser-image-compression";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
@@ -55,9 +54,6 @@ export function InventoryClient({
   const [scannerOpen, setScannerOpen] = useState(false);
   const [isFetchingProduct, setIsFetchingProduct] = useState(false);
   const [scanData, setScanData] = useState<ScanResult | null>(null);
-  const [notifPermission, setNotifPermission] = useState<
-    NotificationPermission | "unsupported"
-  >("unsupported");
   const [isParsingReceipt, setIsParsingReceipt] = useState(false);
   const [receiptItems, setReceiptItems] = useState<string[]>([]);
   const [receiptSheetOpen, setReceiptSheetOpen] = useState(false);
@@ -95,10 +91,6 @@ export function InventoryClient({
       supabase.removeChannel(channel);
     };
   }, [householdId, router]);
-
-  useEffect(() => {
-    setNotifPermission(getNotificationPermission());
-  }, []);
 
   async function handleScan(barcode: string) {
     setScannerOpen(false);
@@ -148,11 +140,6 @@ export function InventoryClient({
     toast(`${item.name} removed.`, {
       action: { label: "Add to List", onClick: () => addToShoppingList(item) },
     });
-  }
-
-  async function handleNotificationClick() {
-    const result = await subscribeToPush();
-    setNotifPermission(result);
   }
 
   async function handleReceiptFile(file: File) {
@@ -268,28 +255,6 @@ export function InventoryClient({
         </h1>
         <div className="flex items-center gap-2">
           <NotificationBell />
-          {notifPermission !== "denied" && notifPermission !== "unsupported" && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNotificationClick}
-              disabled={notifPermission === "granted"}
-              title={notifPermission === "granted" ? "Notifications enabled" : "Enable notifications"}
-              className="relative"
-            >
-              {notifPermission === "granted" ? (
-                <BellRing className="size-4" />
-              ) : (
-                <>
-                  <Bell className="size-4" />
-                  <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-blue-500" />
-                </>
-              )}
-              <span className="sr-only">
-                {notifPermission === "granted" ? "Notifications enabled" : "Enable notifications"}
-              </span>
-            </Button>
-          )}
           {/* Desktop-only action buttons */}
           <div className="hidden md:flex items-center gap-2">
             <Button
@@ -576,19 +541,13 @@ export function InventoryClient({
       />
 
       {/* Mobile bottom navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-background border-t flex items-center justify-around h-16 px-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex items-center justify-around h-16 px-2">
         <button
           onClick={() => setActiveTab('pantry')}
           className={`flex flex-col items-center gap-1 text-xs px-4 py-2 ${activeTab === 'pantry' ? 'text-primary' : 'text-muted-foreground'}`}
         >
           <Archive className="size-5" />
           <span>Pantry</span>
-        </button>
-        <button
-          onClick={() => setActionMenuOpen(true)}
-          className="absolute left-1/2 -translate-x-1/2 -top-5 flex items-center justify-center bg-primary text-primary-foreground rounded-full size-14 shadow-lg active:scale-95 transition-transform border-4 border-background"
-        >
-          <Plus className="size-6" />
         </button>
         <div className="w-14" />
         <button
@@ -599,6 +558,14 @@ export function InventoryClient({
           <span>Shopping</span>
         </button>
       </nav>
+
+      {/* Standalone FAB — outside nav stacking context */}
+      <button
+        className="md:hidden fixed bottom-[84px] left-1/2 -translate-x-1/2 z-[9999] flex items-center justify-center bg-primary text-primary-foreground rounded-full size-14 shadow-2xl active:scale-95 transition-transform border-4 border-background"
+        onClick={() => { console.log('FAB CLICKED'); alert('FAB clicked!'); setActionMenuOpen(true); }}
+      >
+        <Plus className="size-6" />
+      </button>
     </main>
   );
 }
