@@ -5,8 +5,8 @@ import { Users, LogOut, Copy } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { createClient } from "@/lib/supabase/client";
 import { signOut } from "@/app/auth/actions";
+import { getUserProfile } from "@/app/dashboard/actions";
 import { toast } from "sonner";
 
 interface ProfileSettingsProps {
@@ -25,26 +25,10 @@ export function ProfileSettings({ open, onOpenChange, displayName, email }: Prof
     if (!open) return;
 
     async function fetchHousehold() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("household_id")
-        .eq("id", user.id)
-        .single();
+      const profile = await getUserProfile();
       if (!profile) return;
-
-      const { data: household } = await supabase
-        .from("households")
-        .select("name, invite_code")
-        .eq("id", profile.household_id)
-        .single();
-      if (!household) return;
-
-      setHouseholdName(household.name);
-      setInviteCode(household.invite_code);
+      setHouseholdName(profile.householdName);
+      setInviteCode(profile.inviteCode);
     }
 
     fetchHousehold();

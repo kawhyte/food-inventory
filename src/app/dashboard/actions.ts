@@ -245,6 +245,27 @@ export async function savePushSubscription(
   return error ? { error: error.message } : {};
 }
 
+export async function getUserProfile(): Promise<{
+  householdName: string | null;
+  inviteCode: string | null;
+} | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("households(name, invite_code)")
+    .eq("id", user.id)
+    .single();
+
+  const household = (data as unknown as { households?: { name: string; invite_code: string } | null })?.households;
+  return {
+    householdName: household?.name ?? null,
+    inviteCode: household?.invite_code ?? null,
+  };
+}
+
 export async function triggerCronTest(): Promise<{ sent?: number; error?: string }> {
   const { headers } = await import("next/headers");
   const secret = process.env.CRON_SECRET;
