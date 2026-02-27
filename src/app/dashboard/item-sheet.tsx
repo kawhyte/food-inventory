@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -73,6 +74,7 @@ export function ItemSheet({
   scanData,
 }: ItemSheetProps) {
   const isEditing = !!item;
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -129,7 +131,6 @@ export function ItemSheet({
   }, [open, item, scanData, form]);
 
   function onSubmit(raw: ItemSchema) {
-    console.log("SUBMIT TRIGGERED", raw);
     setServerError(null);
 
     const values: ItemFormValues = {
@@ -153,6 +154,7 @@ export function ItemSheet({
       if (result.error) {
         setServerError(result.error);
       } else {
+        router.refresh();
         onOpenChange(false);
       }
     });
@@ -166,6 +168,7 @@ export function ItemSheet({
         setServerError(result.error);
         setConfirmingDelete(false);
       } else {
+        router.refresh();
         onOpenChange(false);
       }
     });

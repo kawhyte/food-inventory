@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from 'next/cache';
 import { createClient } from "@/lib/supabase/server";
 import type { ItemFormValues, GroupedItem, AppNotification } from "@/lib/types";
 
@@ -42,6 +43,7 @@ export async function createItem(
   });
 
   if (error) return { error: error.message };
+  revalidatePath('/dashboard');
   return {};
 }
 
@@ -67,6 +69,7 @@ export async function createItems(
 
   const { error } = await supabase.from("items").insert(rows);
   if (error) return { error: error.message };
+  revalidatePath('/dashboard');
   return {};
 }
 
@@ -96,6 +99,7 @@ export async function updateItem(
     .eq("household_id", householdId);
 
   if (error) return { error: error.message };
+  revalidatePath('/dashboard');
   return {};
 }
 
@@ -138,6 +142,7 @@ export async function deleteItem(id: string): Promise<{ error?: string }> {
     .eq("household_id", householdId);
 
   if (error) return { error: error.message };
+  revalidatePath('/dashboard');
   return {};
 }
 
@@ -160,6 +165,7 @@ export async function processRestock(
       .eq("household_id", householdId);
     if (error) return { error: error.message };
   }
+  revalidatePath('/dashboard');
   return {};
 }
 
