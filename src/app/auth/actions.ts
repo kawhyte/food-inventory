@@ -9,13 +9,14 @@ export async function signUp(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const displayName = formData.get("display_name") as string;
-  const inviteCode = formData.get("invite_code") as string | null;
+  const rawInvite = formData.get("invite_code") as string | null;
+  const inviteCode = rawInvite ? rawInvite.trim() : null;
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { display_name: displayName, ...(inviteCode && { invite_code: inviteCode }) },
+      data: { display_name: displayName, ...(inviteCode && inviteCode !== "" && { invite_code: inviteCode }) },
     },
   });
 
