@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   // Get user's household_id
   const { data: profile } = await supabase
     .from("profiles")
-    .select("household_id")
+    .select("household_id, display_name")
     .eq("id", user.id)
     .single();
 
@@ -58,6 +58,8 @@ export default async function DashboardPage() {
       locations={(locationsResult.data ?? []) as LocationRow[]}
       categories={(categoriesResult.data ?? []) as CategoryRow[]}
       householdId={householdId}
+      displayName={profile.display_name ?? ""}
+      email={user.email ?? ""}
     />
   );
 }

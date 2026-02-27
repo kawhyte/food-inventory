@@ -12,9 +12,12 @@ import { toast } from "sonner";
 interface ProfileSettingsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  displayName: string;
+  email: string;
 }
 
-export function ProfileSettings({ open, onOpenChange }: ProfileSettingsProps) {
+export function ProfileSettings({ open, onOpenChange, displayName, email }: ProfileSettingsProps) {
+  const initials = displayName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
   const [householdName, setHouseholdName] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
 
@@ -57,9 +60,15 @@ export function ProfileSettings({ open, onOpenChange }: ProfileSettingsProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-xl">
-        <SheetHeader className="text-left pb-4">
-          <SheetTitle>Account</SheetTitle>
+        <SheetHeader className="text-center pb-2">
+          <div className="w-16 h-16 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-2xl mx-auto mb-3">
+            {initials}
+          </div>
+          <SheetTitle className="text-lg">{displayName}</SheetTitle>
+          <p className="text-sm text-muted-foreground">{email}</p>
         </SheetHeader>
+
+        <Separator className="my-4" />
 
         <div className="space-y-4">
           <div>

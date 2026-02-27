@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Home, Plus, Settings, ShoppingBasket, User, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
+import { Home, Plus, Settings, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
@@ -38,6 +38,8 @@ interface InventoryClientProps {
   locations: LocationRow[];
   categories: CategoryRow[];
   householdId: string;
+  displayName: string;
+  email: string;
 }
 
 export function InventoryClient({
@@ -45,6 +47,8 @@ export function InventoryClient({
   locations,
   categories,
   householdId,
+  displayName,
+  email,
 }: InventoryClientProps) {
   const router = useRouter();
   const [addSheetOpen, setAddSheetOpen] = useState(false);
@@ -68,6 +72,8 @@ export function InventoryClient({
   const [sortBy, setSortBy] = useState<"name" | "expiry" | "quantity">("name");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [listRef] = useAutoAnimate();
+
+  const initials = displayName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
   // Realtime subscription — refresh page data when items change
   useEffect(() => {
@@ -293,10 +299,14 @@ export function InventoryClient({
               Add item
             </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setProfileOpen(true)} title="Account">
-            <User className="size-4" />
-            <span className="sr-only">Account</span>
-          </Button>
+          <div
+            onClick={() => setProfileOpen(true)}
+            className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm cursor-pointer border border-primary/30 select-none"
+            title="Account"
+            role="button"
+          >
+            {initials}
+          </div>
         </div>
       </div>
 
@@ -527,7 +537,7 @@ export function InventoryClient({
       />
 
       {/* Profile settings sheet */}
-      <ProfileSettings open={profileOpen} onOpenChange={setProfileOpen} />
+      <ProfileSettings open={profileOpen} onOpenChange={setProfileOpen} displayName={displayName} email={email} />
 
       {/* Hidden file input for receipt photo */}
       <input
