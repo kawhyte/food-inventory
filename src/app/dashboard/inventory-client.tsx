@@ -382,7 +382,7 @@ export function InventoryClient({
           )}
 
           {/* Item list */}
-          <div className="pb-24 md:pb-8">
+          <div className="pb-28 md:pb-8">
             {!hasItems ? (
               <div className="flex flex-col items-center justify-center gap-4 py-24 px-6 text-center">
                 <ShoppingBasket className="size-12 text-muted-foreground/40" />
@@ -541,7 +541,7 @@ export function InventoryClient({
       />
 
       {/* Mobile bottom navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex items-center justify-around h-16 px-2 relative">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-background border-t z-50 pb-[env(safe-area-inset-bottom)] flex items-center justify-around h-16 px-2">
         <button
           onClick={() => setActiveTab('pantry')}
           className={`flex flex-col items-center gap-1 text-xs px-4 py-2 ${activeTab === 'pantry' ? 'text-primary' : 'text-muted-foreground'}`}
