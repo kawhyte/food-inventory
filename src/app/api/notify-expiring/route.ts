@@ -2,11 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
 import { NextResponse } from "next/server";
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+export const dynamic = "force-dynamic";
 
 function createAdminClient() {
   return createClient(
@@ -24,6 +20,12 @@ function formatBody(names: string[], label: string): string {
 }
 
 export async function GET(request: Request) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT!,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!
+  );
+
   const authHeader = request.headers.get("Authorization");
   if (
     !process.env.CRON_SECRET ||
