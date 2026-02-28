@@ -14,6 +14,7 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   turbopack: {}, // This explicitly tells Next.js to silence the warning
+  serverExternalPackages: ['web-push', '@google/genai'],
 };
 
 export default withSerwist(nextConfig);
