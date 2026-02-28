@@ -117,6 +117,21 @@ function main() {
       }
     }
 
+    // Patch @vercel/nft to handle TypeError in MemberExpression static evaluator.
+    // Bug: nft's computePureStaticValue throws "Cannot convert object to primitive value"
+    // when evaluating `a.value in s.value` where a.value is a non-primitive object.
+    // Fix: wrap the entire if/else-if block in try-catch so nft returns undefined instead.
+    const nftPath = path.join(projectRoot, 'node_modules', 'next', 'dist', 'compiled', '@vercel', 'nft', 'index.js');
+    if (fs.existsSync(nftPath)) {
+      const nftContent = fs.readFileSync(nftPath, 'utf8');
+      const buggyPattern = 'if(a.value in s.value){const e=s.value[a.value];if(e===t.UNKNOWN)return undefined;return{value:e}}else if(s.value[t.UNKNOWN]){return undefined}';
+      const fixedPattern = 'try{if(a.value in s.value){const e=s.value[a.value];if(e===t.UNKNOWN)return undefined;return{value:e}}else if(s.value[t.UNKNOWN]){return undefined}}catch(_){return undefined;}';
+      if (nftContent.includes(buggyPattern)) {
+        fs.writeFileSync(nftPath, nftContent.replace(buggyPattern, fixedPattern));
+        log('   ✓ Patched @vercel/nft MemberExpression evaluator', colors.green);
+      }
+    }
+
     process.exit(0);
 
   } catch (error) {

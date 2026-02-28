@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -37,6 +36,7 @@ export async function POST(request: Request) {
   const arrayBuffer = await image.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString("base64");
 
+  const { GoogleGenAI } = await import("@google/genai");
   const ai = new GoogleGenAI({ apiKey });
 
   let response;

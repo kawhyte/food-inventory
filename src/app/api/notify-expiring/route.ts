@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import webpush from "web-push";
+import type webpush from "web-push";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,8 @@ function formatBody(names: string[], label: string): string {
 }
 
 export async function GET(request: Request) {
-  webpush.setVapidDetails(
+  const wp = (await import("web-push")).default;
+  wp.setVapidDetails(
     process.env.VAPID_SUBJECT!,
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
@@ -133,7 +134,7 @@ export async function GET(request: Request) {
 
     for (const row of subs) {
       try {
-        await webpush.sendNotification(
+        await wp.sendNotification(
           row.subscription as webpush.PushSubscription,
           payload
         );
