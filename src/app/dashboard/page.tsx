@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { InventoryClient } from "@/app/dashboard/inventory-client";
 import type { GroupedItem, LocationRow, CategoryRow } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const supabase = await createClient();
 
