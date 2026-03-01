@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { InventoryClient } from "@/app/dashboard/inventory-client";
-import type { GroupedItem, LocationRow, CategoryRow } from "@/lib/types";
+import type { LocationRow, CategoryRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -25,15 +25,8 @@ export default async function DashboardPage() {
 
   const householdId = profile.household_id;
 
-  // Fetch items, locations, and categories in parallel
-  const [itemsResult, locationsResult, categoriesResult] = await Promise.all([
-    supabase
-      .from("items")
-      .select(
-        "id, name, quantity, unit, expiry_date, status, location_id, category_id, barcode, image_url, is_perishable, locations(name), categories(name)"
-      )
-      .eq("household_id", householdId)
-      .order("name"),
+  // Fetch locations and categories (items are fetched client-side via infinite scroll)
+  const [locationsResult, categoriesResult] = await Promise.all([
     supabase
       .from("locations")
       .select("id, name")
@@ -46,17 +39,8 @@ export default async function DashboardPage() {
       .order("name"),
   ]);
 
-  // Group items by location name (server-side)
-  const groupedItems: Record<string, GroupedItem[]> = {};
-  for (const item of (itemsResult.data ?? []) as unknown as GroupedItem[]) {
-    const locationName = item.locations?.name ?? "Uncategorized";
-    if (!groupedItems[locationName]) groupedItems[locationName] = [];
-    groupedItems[locationName].push(item);
-  }
-
   return (
     <InventoryClient
-      groupedItems={groupedItems}
       locations={(locationsResult.data ?? []) as LocationRow[]}
       categories={(categoriesResult.data ?? []) as CategoryRow[]}
       householdId={householdId}

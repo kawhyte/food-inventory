@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useInfiniteInventory } from "@/hooks/use-infinite-inventory";
 import { Home, Plus, Settings, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
@@ -34,7 +34,6 @@ const BarcodeScanner = dynamic(
 );
 
 interface InventoryClientProps {
-  groupedItems: Record<string, GroupedItem[]>;
   locations: LocationRow[];
   categories: CategoryRow[];
   householdId: string;
@@ -43,14 +42,13 @@ interface InventoryClientProps {
 }
 
 export function InventoryClient({
-  groupedItems,
   locations,
   categories,
   householdId,
   displayName,
   email,
 }: InventoryClientProps) {
-  const router = useRouter();
+  const { items, isLoading, hasMore, loadMore, reset } = useInfiniteInventory(householdId);
   const [addSheetOpen, setAddSheetOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GroupedItem | null>(null);
   const [detailItem, setDetailItem] = useState<GroupedItem | null>(null);
@@ -71,11 +69,12 @@ export function InventoryClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "expiry" | "quantity">("name");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [listRef] = useAutoAnimate();
 
   const initials = displayName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 
-  // Realtime subscription — refresh page data when items change
+  // Realtime subscription — reset and re-fetch from page 0 when items change
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
@@ -89,7 +88,7 @@ export function InventoryClient({
           filter: `household_id=eq.${householdId}`,
         },
         () => {
-          router.refresh();
+          reset();
         }
       )
       .subscribe();
@@ -97,7 +96,21 @@ export function InventoryClient({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [householdId, router]);
+  }, [householdId, reset]);
+
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) loadMore();
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   async function handleScan(barcode: string) {
     setScannerOpen(false);
@@ -187,14 +200,20 @@ export function InventoryClient({
   }
 
   // Extract shopping items
-  const shoppingItems = Object.values(groupedItems).flat().filter(
-    (item) => item.status === 'shopping'
-  );
+  const shoppingItems = items.filter((item) => item.status === "shopping");
+
+  // Derive groupedItems from hook items
+  const rawGroupedItems: Record<string, GroupedItem[]> = {};
+  for (const item of items) {
+    const loc = item.locations?.name ?? "Uncategorized";
+    if (!rawGroupedItems[loc]) rawGroupedItems[loc] = [];
+    rawGroupedItems[loc].push(item);
+  }
 
   // Process items: filter by search, sort, and filter by location
   const processedGroups: Record<string, GroupedItem[]> = {};
 
-  Object.entries(groupedItems).forEach(([locationName, items]) => {
+  Object.entries(rawGroupedItems).forEach(([locationName, items]) => {
     // Filter shopping items out of pantry view, then filter by search query
     const filtered = items
       .filter((item) => item.status !== 'shopping')
@@ -392,7 +411,11 @@ export function InventoryClient({
 
           {/* Item list */}
           <div className="pb-28 md:pb-8">
-            {!hasItems ? (
+            {isLoading && items.length === 0 ? (
+              <div className="flex justify-center py-24">
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : !hasItems ? (
               <div className="flex flex-col items-center justify-center gap-4 py-24 px-6 text-center">
                 <ShoppingBasket className="size-12 text-muted-foreground/40" />
                 <div>
@@ -444,6 +467,15 @@ export function InventoryClient({
                 ))}
               </div>
             )}
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="py-6 flex justify-center">
+              {isLoading && items.length > 0 && (
+                <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              )}
+              {!hasMore && items.length > 0 && (
+                <p className="text-xs text-muted-foreground">End of inventory</p>
+              )}
+            </div>
           </div>
         </>
       ) : (
