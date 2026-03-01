@@ -149,7 +149,15 @@
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes confetti-star {
+  0%   { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(0.2); }
+  18%  { transform: translate(calc(var(--tx) * 0.2), calc(var(--ty) * 0.15)) rotate(calc(var(--rot) * 0.3)) scale(1.3); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.5); }
+}
 
 @layer utilities {
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .animate-confetti-star {
+    animation: confetti-star var(--duration, 900ms) ease-out forwards;
+  }
 }

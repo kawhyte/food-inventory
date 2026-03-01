@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +33,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createItem, updateItem, deleteItem } from "@/app/dashboard/actions";
+import { DoodleStar } from "@/components/ui/doodle-star";
 import type {
   GroupedItem,
   LocationRow,
@@ -40,6 +41,43 @@ import type {
   ItemFormValues,
   ScanResult,
 } from "@/lib/types";
+
+const STAR_COLORS = ['#2DD4BF', '#FBBF24', '#FB7185'];
+
+function ConfettiBurst() {
+  const stars = useMemo(() =>
+    Array.from({ length: 14 }, (_, i) => ({
+      id: i,
+      tx: Math.round(Math.random() * 300 - 150),
+      ty: -(Math.round(Math.random() * 200 + 200)),
+      rot: Math.round(Math.random() * 360),
+      delay: i * 45 + Math.round(Math.random() * 70),
+      duration: 750 + Math.round(Math.random() * 350),
+      size: 14 + Math.round(Math.random() * 10),
+      color: STAR_COLORS[i % 3],
+    }))
+  , []);
+
+  return (
+    <div className="fixed bottom-[12vh] left-1/2 -translate-x-1/2 pointer-events-none z-[51]">
+      {stars.map((s) => (
+        <div
+          key={s.id}
+          className="absolute animate-confetti-star"
+          style={{
+            '--tx': `${s.tx}px`,
+            '--ty': `${s.ty}px`,
+            '--rot': `${s.rot}deg`,
+            '--duration': `${s.duration}ms`,
+            animationDelay: `${s.delay}ms`,
+          } as React.CSSProperties}
+        >
+          <DoodleStar color={s.color} size={s.size} />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const itemSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -78,6 +116,7 @@ export function ItemSheet({
   const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const form = useForm<ItemSchema>({
     resolver: zodResolver(itemSchema),
@@ -154,6 +193,10 @@ export function ItemSheet({
       if (result.error) {
         setServerError(result.error);
       } else {
+        if (!isEditing) {
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 2000);
+        }
         router.refresh();
         onOpenChange(false);
       }
@@ -178,7 +221,9 @@ export function ItemSheet({
   const showProductNotFound = showScanInfo && !scanData.name;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <>
+      {showConfetti && <ConfettiBurst />}
+      <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
         className="bg-pantry-paper border-t-[3px] border-l-[3px] border-r-[3px] border-pantry-ink border-b-0 rounded-t-[24px] max-h-[92dvh] flex flex-col p-0"
@@ -507,5 +552,6 @@ export function ItemSheet({
         </Form>
       </SheetContent>
     </Sheet>
+    </>
   );
 }
