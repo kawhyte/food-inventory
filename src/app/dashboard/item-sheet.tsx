@@ -179,9 +179,19 @@ export function ItemSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="flex flex-col w-full sm:max-w-md p-0">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b">
-          <SheetTitle>{isEditing ? "Edit item" : "Add item"}</SheetTitle>
+      <SheetContent
+        side="bottom"
+        className="bg-pantry-paper border-t-[3px] border-l-[3px] border-r-[3px] border-pantry-ink border-b-0 rounded-t-[24px] max-h-[92dvh] flex flex-col p-0"
+      >
+        {/* Handle bar */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1.5 rounded-full bg-pantry-ink/25" />
+        </div>
+
+        <SheetHeader className="px-6 pt-2 pb-4 border-b-2 border-pantry-ink/20 shrink-0">
+          <SheetTitle className="font-handwritten font-bold text-xl text-pantry-ink">
+            {isEditing ? "Edit item" : "Add item"}
+          </SheetTitle>
           <SheetDescription>
             {isEditing ? "Update the details of this inventory item" : "Add a new item to your inventory"}
           </SheetDescription>
@@ -219,7 +229,7 @@ export function ItemSheet({
                       <Input
                         placeholder="e.g. Whole milk"
                         {...field}
-                        className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary"
+                        className="bg-transparent border-0 border-b-2 border-pantry-ink rounded-none h-12 px-1 focus-visible:ring-0 focus-visible:outline-none focus-visible:border-pantry-teal text-base text-pantry-ink"
                       />
                     </FormControl>
                     {showProductNotFound && (
@@ -252,7 +262,7 @@ export function ItemSheet({
                             type="button"
                             variant="outline"
                             size="icon"
-                            className="size-12 shrink-0 p-0 rounded-2xl"
+                            className="size-11 shrink-0 p-0 rounded-full border-2 border-pantry-ink bg-white shadow-[2px_2px_0px_0px_#1E293B] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                             onClick={() => {
                               const current = Number(field.value) || 0;
                               if (current > 0) {
@@ -270,7 +280,7 @@ export function ItemSheet({
                             min="0"
                             step="any"
                             {...field}
-                            className="bg-muted/50 border-transparent rounded-2xl h-14 flex-1 text-center text-lg font-semibold px-0 focus-visible:ring-primary"
+                            className="bg-transparent border-0 border-b-2 border-pantry-ink rounded-none h-12 px-1 focus-visible:ring-0 focus-visible:outline-none focus-visible:border-pantry-teal text-center text-lg font-bold font-handwritten text-pantry-ink flex-1"
                             onChange={(e) =>
                               field.onChange(
                                 e.target.value === "" ? 0 : e.target.valueAsNumber
@@ -283,7 +293,7 @@ export function ItemSheet({
                             type="button"
                             variant="outline"
                             size="icon"
-                            className="size-12 shrink-0 p-0 rounded-2xl"
+                            className="size-11 shrink-0 p-0 rounded-full border-2 border-pantry-ink bg-white shadow-[2px_2px_0px_0px_#1E293B] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                             onClick={() => {
                               const current = Number(field.value) || 0;
                               field.onChange(current + 1);
@@ -307,7 +317,7 @@ export function ItemSheet({
                         <Input
                           placeholder="kg, L, pcs…"
                           {...field}
-                          className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary"
+                          className="bg-transparent border-0 border-b-2 border-pantry-ink rounded-none h-12 px-1 focus-visible:ring-0 focus-visible:outline-none focus-visible:border-pantry-teal text-base text-pantry-ink"
                         />
                       </FormControl>
                       <FormMessage />
@@ -325,7 +335,7 @@ export function ItemSheet({
                     <FormLabel>Location</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary">
+                        <SelectTrigger className="bg-transparent border-0 border-b-2 border-pantry-ink rounded-none h-12 px-1 focus:ring-0 text-base text-pantry-ink">
                           <SelectValue placeholder="Select location" />
                         </SelectTrigger>
                       </FormControl>
@@ -354,7 +364,7 @@ export function ItemSheet({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary">
+                        <SelectTrigger className="bg-transparent border-0 border-b-2 border-pantry-ink rounded-none h-12 px-1 focus:ring-0 text-base text-pantry-ink">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
@@ -382,7 +392,7 @@ export function ItemSheet({
                       <Input
                         type="date"
                         {...field}
-                        className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary"
+                        className="bg-transparent border-0 border-b-2 border-pantry-ink rounded-none h-12 px-1 focus-visible:ring-0 focus-visible:outline-none focus-visible:border-pantry-teal text-base text-pantry-ink"
                       />
                     </FormControl>
                     <FormMessage />
@@ -399,7 +409,7 @@ export function ItemSheet({
                     <FormLabel>Status</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-muted/50 border-transparent rounded-2xl h-14 px-4 text-base focus-visible:ring-primary">
+                        <SelectTrigger className="bg-transparent border-0 border-b-2 border-pantry-ink rounded-none h-12 px-1 focus:ring-0 text-base text-pantry-ink">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
@@ -422,14 +432,14 @@ export function ItemSheet({
               )}
             </div>
 
-            <SheetFooter className="border-t px-6 py-4">
+            <SheetFooter className="border-t-2 border-pantry-ink/20 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shrink-0">
               {!confirmingDelete ? (
                 <>
                   {/* Primary Save Button */}
                   <Button
                     type="submit"
                     disabled={isPending}
-                    className="w-full h-14 rounded-2xl text-lg font-semibold"
+                    className="w-full h-14 rounded-[12px_12px_20px_4px] text-lg font-handwritten font-bold bg-pantry-teal text-pantry-ink border-2 border-pantry-ink shadow-[4px_4px_0px_0px_#1E293B] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all"
                   >
                     {isPending ? (
                       <>
