@@ -45,6 +45,19 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Pantry Pal palette */
+  --color-pantry-ink: #1E293B;
+  --color-pantry-paper: #FAFAF9;
+  --color-pantry-teal: #2DD4BF;
+  --color-pantry-coral: #FB7185;
+  --color-pantry-mustard: #FBBF24;
+  --color-pantry-leaf: #4ADE80;
+  --color-pantry-sky: #7DD3FC;
+
+  /* Custom animations */
+  --animate-gentle-bounce: gentle-bounce 3s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.8s ease-out forwards;
 }
 
 :root {
@@ -125,4 +138,17 @@
     @apply bg-background text-foreground;
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@layer utilities {
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
