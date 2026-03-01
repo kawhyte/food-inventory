@@ -21,7 +21,7 @@ const patrickHand = Patrick_Hand({
 
 export const metadata: Metadata = {
   title: "Pantry Pal",
-  description: "Your hand-drawn kitchen companion",
+  description: "Your hand-drawn kitchen companion. Welcome to Pantry Pal – Let's get cooking!",
   applicationName: "Pantry Pal",
   appleWebApp: {
     capable: true,

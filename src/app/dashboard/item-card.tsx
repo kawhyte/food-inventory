@@ -1,6 +1,5 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ShoppingBag, MoreHorizontal, TriangleAlert } from "lucide-react";
 import type { GroupedItem } from "@/lib/types";
@@ -42,38 +41,40 @@ export function ItemCard({ item, onEdit, onOpenDetail, onConsume, onToss }: Item
     : '';
 
   return (
-    <div className="relative">
-      <Card
-        className="border-none shadow-sm rounded-3xl overflow-hidden bg-card h-full flex flex-col hover:bg-muted/50 transition-colors active:scale-[0.98] transition-transform duration-200 cursor-pointer"
+    <div className="relative mt-2 overflow-visible">
+      {/* Main card */}
+      <div
+        className="bg-white border-2 border-pantry-ink rounded-[15px_15px_30px_5px] shadow-[4px_4px_0px_0px_#1E293B] transition-all cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#1E293B] overflow-hidden"
         onClick={() => onOpenDetail(item)}
       >
-        {/* Image */}
-        {item.image_url ? (
-          <img
-            src={item.image_url}
-            alt={item.name}
-            className="h-32 w-full object-contain p-4 bg-white dark:bg-slate-900 rounded-t-3xl"
-          />
-        ) : (
-          <div className="h-32 w-full bg-muted rounded-t-3xl flex items-center justify-center">
-            <ShoppingBag className="size-12 text-muted-foreground/30" />
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="p-3 flex flex-col gap-1 flex-1">
-          <p className="font-bold leading-tight line-clamp-2">{item.name}</p>
-          {item.categories?.name && (
-            <p className="text-xs text-muted-foreground truncate">
-              {item.categories.name}
-            </p>
+        {/* Image area */}
+        <div className="relative aspect-square w-full">
+          {item.image_url ? (
+            <img
+              src={item.image_url}
+              alt={item.name}
+              className="w-full h-full object-contain bg-pantry-paper"
+            />
+          ) : (
+            <div className="w-full h-full bg-pantry-paper border-b-2 border-pantry-ink/30 flex items-center justify-center">
+              <ShoppingBag className="size-10 text-pantry-ink/20" />
+            </div>
           )}
-          <p className="text-xs font-medium text-muted-foreground">
-            {item.quantity} {item.unit || 'units'}
+
+          {/* Quantity sticker */}
+          <div className="absolute top-2 left-2 z-10 w-7 h-7 rounded-full border-2 border-pantry-ink bg-pantry-mustard flex items-center justify-center text-xs font-bold font-handwritten">
+            {item.quantity}
+          </div>
+        </div>
+
+        {/* Name strip */}
+        <div className="p-2 border-t-2 border-pantry-ink">
+          <p className="font-handwritten font-bold text-sm leading-tight line-clamp-2 text-pantry-ink">
+            {item.name}
           </p>
           {daysUntil !== null && (
             <p
-              className={`text-xs mt-auto flex items-center gap-1 ${
+              className={`text-[10px] mt-1 flex items-center gap-1 ${
                 isHardExpired
                   ? "text-destructive font-bold"
                   : isSoftExpired
@@ -81,33 +82,33 @@ export function ItemCard({ item, onEdit, onOpenDetail, onConsume, onToss }: Item
                   : !isPast && daysUntil! <= 2
                   ? "text-destructive font-bold"
                   : !isPast && daysUntil! <= 3
-                  ? "text-amber-600 dark:text-amber-400"
-                  : "text-muted-foreground"
+                  ? "text-amber-600"
+                  : "text-pantry-ink/50"
               }`}
             >
               {!isPast && daysUntil! <= 2 && daysUntil! > 0 && (
                 <TriangleAlert className="size-3 shrink-0" />
               )}
               {isHardExpired
-                ? `Expired (Passed: ${formattedSafeDate})`
+                ? `Expired (${formattedSafeDate})`
                 : isSoftExpired
-                ? <span>Past Best By<br/>(Safe until: {formattedSafeDate})</span>
+                ? `Safe until ${formattedSafeDate}`
                 : daysUntil! <= 3
                 ? `${daysUntil}d left`
-                : `Best By: ${formattedExpiryDate}`}
+                : `Best by ${formattedExpiryDate}`}
             </p>
           )}
         </div>
-      </Card>
+      </div>
 
-      {/* Context Menu Button */}
+      {/* Context menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="absolute top-2 right-2 z-10 flex items-center justify-center size-8 rounded-full bg-background/60 backdrop-blur-md border border-border/50 text-foreground shadow-sm active:scale-95 transition-all"
+            className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full border border-pantry-ink/40 bg-white/80 flex items-center justify-center active:scale-95 transition-transform"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreHorizontal className="size-4" />
+            <MoreHorizontal className="size-3.5" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>

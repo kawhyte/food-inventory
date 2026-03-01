@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useInfiniteInventory } from "@/hooks/use-infinite-inventory";
-import { Home, Plus, Settings, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart } from "lucide-react";
+import { Home, Plus, Settings, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
@@ -65,7 +65,7 @@ export function InventoryClient({
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'pantry' | 'shopping'>('pantry');
   const [activeLocation, setActiveLocation] = useState<string>("All");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "expiry" | "quantity">("name");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -423,28 +423,30 @@ export function InventoryClient({
               )
             ) : !hasItems ? (
               <div className="flex flex-col items-center justify-center gap-4 py-24 px-6 text-center">
-                <ShoppingBasket className="size-12 text-muted-foreground/40" />
+                {/* Doodle illustration container */}
+                <div className="border-2 border-pantry-ink rounded-[20px_5px_20px_5px] shadow-[4px_4px_0px_0px_#1E293B] p-6 bg-pantry-paper">
+                  <Ghost className="size-16 text-pantry-teal" strokeWidth={1.5} />
+                </div>
                 <div>
-                  <p className="font-medium">No items yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Add your first item to get started.
+                  <p className="font-handwritten font-bold text-xl text-pantry-ink">
+                    Your pantry looks a bit lonely!
+                  </p>
+                  <p className="text-sm text-pantry-ink/60 mt-1">
+                    Tap &apos;+&apos; to add some groceries.
                   </p>
                 </div>
                 {/* Desktop: two buttons */}
                 <div className="hidden md:flex gap-2">
                   <Button variant="outline" onClick={() => setScannerOpen(true)}>
-                    <ScanLine className="size-4" />
-                    Scan barcode
+                    <ScanLine className="size-4" /> Scan barcode
                   </Button>
                   <Button onClick={() => { setScanData(null); setAddSheetOpen(true); }}>
-                    <Plus className="size-4" />
-                    Add item
+                    <Plus className="size-4" /> Add item
                   </Button>
                 </div>
-                {/* Mobile: single CTA that opens action menu */}
+                {/* Mobile: FAB trigger */}
                 <Button className="md:hidden" onClick={() => setActionMenuOpen(true)}>
-                  <Plus className="size-4" />
-                  Add to Inventory
+                  <Plus className="size-4" /> Add to Inventory
                 </Button>
               </div>
             ) : viewMode === "list" ? (
@@ -467,7 +469,7 @@ export function InventoryClient({
                 </div>
               ))
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-3 py-3" ref={listRef}>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 px-4 py-4" ref={listRef}>
                 {flatFilteredItems.map((item) => (
                   <ItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onConsume={handleConsume} onToss={handleToss} />
                 ))}
