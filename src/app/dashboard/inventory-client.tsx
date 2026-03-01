@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenu
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ItemSheet } from "@/app/dashboard/item-sheet";
-import { ItemRow } from "@/app/dashboard/item-row";
+import { FoodItemCard, FoodItemCardSkeleton } from "@/app/dashboard/food-item-card";
 import { ItemCard } from "@/app/dashboard/item-card";
 import { ItemDetailDrawer } from "@/app/dashboard/item-detail-drawer";
 import { ItemActionMenu } from "@/app/dashboard/item-action-menu";
@@ -412,9 +412,15 @@ export function InventoryClient({
           {/* Item list */}
           <div className="pb-28 md:pb-8">
             {isLoading && items.length === 0 ? (
-              <div className="flex justify-center py-24">
-                <Loader2 className="size-6 animate-spin text-muted-foreground" />
-              </div>
+              viewMode === "list" ? (
+                <div className="px-4 py-4 flex flex-col gap-4">
+                  {Array.from({ length: 5 }).map((_, i) => <FoodItemCardSkeleton key={i} />)}
+                </div>
+              ) : (
+                <div className="flex justify-center py-24">
+                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                </div>
+              )
             ) : !hasItems ? (
               <div className="flex flex-col items-center justify-center gap-4 py-24 px-6 text-center">
                 <ShoppingBasket className="size-12 text-muted-foreground/40" />
@@ -453,9 +459,9 @@ export function InventoryClient({
                       </span>
                     </h2>
                   </div>
-                  <div className="divide-y divide-border" ref={listRef}>
+                  <div className="flex flex-col gap-6 px-4 py-3 bg-pantry-paper" ref={listRef}>
                     {processedGroups[locationName].map((item) => (
-                      <ItemRow key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} />
+                      <FoodItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} />
                     ))}
                   </div>
                 </div>

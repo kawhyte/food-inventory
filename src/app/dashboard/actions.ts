@@ -103,6 +103,19 @@ export async function updateItem(
   return {};
 }
 
+export async function incrementItemQuantity(
+  id: string,
+  currentQuantity: number
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("items")
+    .update({ quantity: currentQuantity + 1 })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  return {};
+}
+
 export async function decrementItemQuantity(
   id: string,
   currentQuantity: number

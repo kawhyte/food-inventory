@@ -12,7 +12,7 @@ export default function Home() {
       {/* Main content */}
       <div className="flex flex-col items-center gap-8 px-8 text-center animate-fade-in">
         {/* Title */}
-        <h1 className="text-5xl font-black tracking-tight uppercase leading-none">
+        <h1 className="text-5xl font-handwritten tracking-tight uppercase leading-none">
           <span className="text-pantry-ink">PANTRY</span>
           <br />
           <span className="text-pantry-teal">PAL</span>
