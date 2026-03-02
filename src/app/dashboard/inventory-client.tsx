@@ -274,13 +274,15 @@ export function InventoryClient({
   return (
     <main className="min-h-svh max-w-2xl mx-auto">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-background border-b px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-semibold flex items-center gap-2">
-          <ShoppingBasket className="size-5 text-primary" />
-          Food Inventory
+      <div className="sticky top-0 z-30 bg-background px-4 py-3 flex items-center justify-between">
+        <h1 className="font-handwritten font-bold text-xl text-pantry-ink flex items-center gap-2">
+          <ShoppingBasket className="size-5 text-pantry-teal" />
+          Pantry Pal
         </h1>
         <div className="flex items-center gap-2">
-          <NotificationBell />
+          <div className="w-9 h-9 border-2 border-pantry-ink rounded-full flex items-center justify-center bg-pantry-paper">
+            <NotificationBell />
+          </div>
           {/* Desktop-only action buttons */}
           <div className="hidden md:flex items-center gap-2">
             <Button
@@ -320,7 +322,7 @@ export function InventoryClient({
           </div>
           <div
             onClick={() => setProfileOpen(true)}
-            className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm cursor-pointer border border-primary/30 select-none"
+            className="w-9 h-9 rounded-full bg-pantry-mustard text-pantry-ink border-2 border-pantry-ink flex items-center justify-center font-bold text-sm cursor-pointer select-none"
             title="Account"
             role="button"
           >
@@ -349,19 +351,19 @@ export function InventoryClient({
           <div className="flex items-center gap-2 px-4 py-2 sticky top-[57px] z-30 bg-background border-b">
             {/* Search bar - growing container */}
             <div className="flex-1 relative ">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pantry-ink/50" />
               <Input
                 placeholder="Search your items"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 rounded-full bg-muted/50 border-none"
+                className="pl-9 rounded-[12px_18px_14px_16px] bg-pantry-paper border-2 border-pantry-ink text-pantry-ink placeholder:text-pantry-ink/40 focus-visible:ring-0 focus-visible:border-pantry-teal"
               />
             </div>
 
             {/* Sort dropdown - icon button */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-full shrink-0">
+                <Button variant="outline" size="icon" className="rounded-[6px_12px_8px_14px] border-2 border-pantry-ink shadow-[2px_2px_0px_0px_#1E293B] bg-pantry-paper active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all shrink-0">
                   <ArrowUpDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -380,31 +382,29 @@ export function InventoryClient({
             <div className="sticky top-[101px] z-30 bg-background border-b flex items-center">
               <div className="flex overflow-x-auto gap-1.5 px-3 py-2 flex-1 [&::-webkit-scrollbar]:hidden">
                 {["All", ...locationNames].map((loc) => (
-                  <Button
+                  <button
                     key={loc}
-                    size="sm"
-                    variant={activeLocation === loc ? "default" : "ghost"}
-                    className="shrink-0 text-xs h-7 px-3"
                     onClick={() => setActiveLocation(loc)}
+                    className={`shrink-0 text-xs h-7 px-3 rounded-[8px_16px_12px_6px] border-2 transition-all font-handwritten font-semibold
+                      ${activeLocation === loc
+                        ? 'bg-pantry-teal text-pantry-ink border-pantry-ink shadow-[2px_2px_0px_0px_#1E293B]'
+                        : 'bg-pantry-paper text-pantry-ink/60 border-pantry-ink/30 hover:border-pantry-ink/60'
+                      }`}
                   >
                     {loc}
-                    {loc !== "All" && (
-                      <span className="ml-1 opacity-60">({processedGroups[loc]?.length ?? 0})</span>
-                    )}
-                  </Button>
+                    {loc !== "All" && <span className="ml-1 opacity-60">({processedGroups[loc]?.length ?? 0})</span>}
+                  </button>
                 ))}
               </div>
               <div className="shrink-0 px-2 border-l">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
+                <button
+                  className="size-8 rounded-[4px_10px_6px_12px] border-2 border-pantry-ink/40 bg-pantry-paper hover:border-pantry-ink flex items-center justify-center transition-colors"
                   onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
                   title={viewMode === "grid" ? "Switch to list view" : "Switch to grid view"}
                 >
                   {viewMode === "grid" ? <List className="size-4" /> : <LayoutGrid className="size-4" />}
                   <span className="sr-only">{viewMode === "grid" ? "List view" : "Grid view"}</span>
-                </Button>
+                </button>
               </div>
             </div>
           )}
@@ -593,18 +593,23 @@ export function InventoryClient({
       />
 
       {/* Mobile bottom navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-background border-t z-50 pb-[env(safe-area-inset-bottom)] flex items-center justify-around h-16 px-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-pantry-paper border-t-[3px] border-pantry-ink z-50 pb-[env(safe-area-inset-bottom)] flex items-center justify-around h-16 px-2">
         <button
           onClick={() => setActiveTab('pantry')}
-          className={`flex flex-col items-center gap-1 text-xs px-4 py-2 ${activeTab === 'pantry' ? 'text-primary' : 'text-muted-foreground'}`}
+          className="relative flex flex-col items-center gap-0.5 px-4 py-2"
         >
-          <Archive className="size-5" />
-          <span>Pantry</span>
+          <Archive className={`size-5 ${activeTab === 'pantry' ? 'text-pantry-teal' : 'text-pantry-ink/40'}`} />
+          <span className={`text-xs font-handwritten font-semibold ${activeTab === 'pantry' ? 'text-pantry-teal' : 'text-pantry-ink/40'}`}>
+            Pantry
+          </span>
+          {activeTab === 'pantry' && (
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-[2px_4px_1px_3px] bg-pantry-teal" />
+          )}
         </button>
 
         {/* Breakout FAB */}
         <button
-          className="absolute left-1/2 -translate-x-1/2 -top-5 w-14 h-14 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg border-4 border-background z-50 active:scale-95 transition-transform"
+          className="absolute left-1/2 -translate-x-1/2 -top-5 w-14 h-14 bg-pantry-mustard text-pantry-ink rounded-full flex items-center justify-center border-[3px] border-pantry-ink shadow-[3px_3px_0px_0px_#1E293B] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] transition-all z-50"
           onClick={() => setActionMenuOpen(true)}
         >
           <Plus className="size-6" />
@@ -615,10 +620,15 @@ export function InventoryClient({
 
         <button
           onClick={() => setActiveTab('shopping')}
-          className={`flex flex-col items-center gap-1 text-xs px-4 py-2 ${activeTab === 'shopping' ? 'text-primary' : 'text-muted-foreground'}`}
+          className="relative flex flex-col items-center gap-0.5 px-4 py-2"
         >
-          <ShoppingCart className="size-5" />
-          <span>Shopping</span>
+          <ShoppingCart className={`size-5 ${activeTab === 'shopping' ? 'text-pantry-teal' : 'text-pantry-ink/40'}`} />
+          <span className={`text-xs font-handwritten font-semibold ${activeTab === 'shopping' ? 'text-pantry-teal' : 'text-pantry-ink/40'}`}>
+            Shopping
+          </span>
+          {activeTab === 'shopping' && (
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-[2px_4px_1px_3px] bg-pantry-teal" />
+          )}
         </button>
       </nav>
     </main>

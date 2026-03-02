@@ -44,7 +44,7 @@ export function ItemCard({ item, onEdit, onOpenDetail, onConsume, onToss }: Item
     <div className="relative mt-2 overflow-visible">
       {/* Main card */}
       <div
-        className="bg-white border-2 border-pantry-ink rounded-[15px_15px_30px_5px] shadow-[4px_4px_0px_0px_#1E293B] transition-all cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#1E293B] overflow-hidden"
+        className="bg-white border-2 border-pantry-ink rounded-[15px_20px_18px_16px] shadow-[4px_4px_0px_0px_#1E293B] transition-all cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#1E293B] overflow-hidden"
         onClick={() => onOpenDetail(item)}
       >
         {/* Image area */}
