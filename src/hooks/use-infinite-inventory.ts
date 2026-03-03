@@ -6,7 +6,7 @@ import type { GroupedItem } from "@/lib/types";
 
 const PAGE_SIZE = 15;
 const FIELDS =
-  "id, name, quantity, unit, expiry_date, status, location_id, category_id, barcode, image_url, is_perishable, locations(name), categories(name)";
+  "id, name, quantity, unit, expiry_date, status, needs_restock, location_id, category_id, barcode, image_url, is_perishable, locations(name), categories(name)";
 
 export function useInfiniteInventory(householdId: string) {
   const [items, setItems] = useState<GroupedItem[]>([]);

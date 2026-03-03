@@ -21,7 +21,8 @@ import { ItemActionMenu } from "@/app/dashboard/item-action-menu";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { ShoppingList } from "@/app/dashboard/shopping-list";
 import { ProfileSettings } from "@/app/dashboard/profile-settings";
-import { deleteItem, decrementItemQuantity, updateItemStatus } from "@/app/dashboard/actions";
+import { deleteItem, decrementItemQuantity, handleItemLifecycle } from "@/app/dashboard/actions";
+import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { PostMortemModal } from "./post-mortem-modal";
 import { GraveyardTab } from "./graveyard-tab";
 import imageCompression from "browser-image-compression";
@@ -76,6 +77,7 @@ export function InventoryClient({
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'pantry' | 'shopping' | 'history' | 'profile'>('pantry');
   const [postMortemItem, setPostMortemItem] = useState<GroupedItem | null>(null);
+  const [showRestockConfetti, setShowRestockConfetti] = useState(false);
   const [activeLocation, setActiveLocation] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
@@ -173,13 +175,15 @@ export function InventoryClient({
 
   async function handlePostMortemRestock() {
     if (!postMortemItem) return;
-    await updateItemStatus(postMortemItem.id, 'shopping');
+    await handleItemLifecycle(postMortemItem.id, 'RESTOCK');
     setPostMortemItem(null);
+    setShowRestockConfetti(true);
+    setTimeout(() => setShowRestockConfetti(false), 1400);
   }
 
   async function handlePostMortemGraveyard() {
     if (!postMortemItem) return;
-    await updateItemStatus(postMortemItem.id, 'archived');
+    await handleItemLifecycle(postMortemItem.id, 'ARCHIVE');
     setPostMortemItem(null);
   }
 
@@ -220,8 +224,10 @@ export function InventoryClient({
     }
   }
 
-  // Extract shopping items
-  const shoppingItems = items.filter((item) => item.status === "shopping");
+  // Extract shopping items (manually added + needs_restock pantry items)
+  const shoppingItems = items.filter(
+    (item) => item.status === "shopping" || item.needs_restock === true
+  );
 
   // Extract graveyard items
   const graveyardItems = items.filter((item) => item.status === "archived");
@@ -238,9 +244,9 @@ export function InventoryClient({
   const processedGroups: Record<string, GroupedItem[]> = {};
 
   Object.entries(rawGroupedItems).forEach(([locationName, items]) => {
-    // Filter shopping and archived items out of pantry view, then filter by search query
+    // Filter shopping, archived, and needs_restock items out of pantry view, then filter by search query
     const filtered = items
-      .filter((item) => item.status !== 'shopping' && item.status !== 'archived')
+      .filter((item) => item.status !== 'shopping' && item.status !== 'archived' && !item.needs_restock)
       .filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     // Sort the filtered items
@@ -606,6 +612,9 @@ export function InventoryClient({
 
       {/* Profile settings sheet */}
       <ProfileSettings open={profileOpen} onOpenChange={setProfileOpen} displayName={displayName} email={email} />
+
+      {/* Restock confetti burst */}
+      {showRestockConfetti && <ConfettiBurst />}
 
       {/* Post-mortem modal */}
       <PostMortemModal

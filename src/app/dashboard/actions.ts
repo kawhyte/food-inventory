@@ -178,6 +178,30 @@ export async function updateItemStatus(
   return {};
 }
 
+export async function handleItemLifecycle(
+  id: string,
+  action: 'RESTOCK' | 'ARCHIVE'
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const householdId = await getHouseholdId(supabase);
+  if (!householdId) return { error: "Not authenticated" };
+
+  const update =
+    action === 'RESTOCK'
+      ? { status: 'available' as const, needs_restock: true, quantity: 0 }
+      : { status: 'archived' as const, needs_restock: false };
+
+  const { error } = await supabase
+    .from("items")
+    .update(update)
+    .eq("id", id)
+    .eq("household_id", householdId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/dashboard');
+  return {};
+}
+
 export async function processRestock(
   updates: { id: string; quantity: number; expiry_date: string }[]
 ): Promise<{ error?: string }> {
@@ -192,6 +216,7 @@ export async function processRestock(
         quantity: u.quantity,
         expiry_date: u.expiry_date || null,
         status: "available",
+        needs_restock: false,
       })
       .eq("id", u.id)
       .eq("household_id", householdId);

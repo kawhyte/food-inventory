@@ -27,6 +27,7 @@ export interface GroupedItem {
   barcode: string | null;
   image_url: string | null;
   is_perishable: boolean | null;
+  needs_restock: boolean | null;
 }
 
 export interface LocationRow {
