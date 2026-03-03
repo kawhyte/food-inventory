@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useInfiniteInventory } from "@/hooks/use-infinite-inventory";
-import { Home, Plus, Settings, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost } from "lucide-react";
+import { Plus, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost, Clock, User } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
@@ -21,8 +21,9 @@ import { ItemActionMenu } from "@/app/dashboard/item-action-menu";
 import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { ShoppingList } from "@/app/dashboard/shopping-list";
 import { ProfileSettings } from "@/app/dashboard/profile-settings";
-import { deleteItem, decrementItemQuantity, addToShoppingList } from "@/app/dashboard/actions";
-import { toast } from "sonner";
+import { deleteItem, decrementItemQuantity, updateItemStatus } from "@/app/dashboard/actions";
+import { PostMortemModal } from "./post-mortem-modal";
+import { GraveyardTab } from "./graveyard-tab";
 import imageCompression from "browser-image-compression";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
@@ -39,6 +40,16 @@ interface InventoryClientProps {
   householdId: string;
   displayName: string;
   email: string;
+}
+
+function NavTab({ icon: Icon, label, active, onClick }: { icon: React.ElementType; label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="relative flex flex-col items-center gap-0.5 px-3 py-2 shrink-0">
+      <Icon className={`size-5 ${active ? 'text-pantry-teal' : 'text-pantry-ink/40'}`} />
+      <span className={`text-xs font-handwritten font-semibold ${active ? 'text-pantry-teal' : 'text-pantry-ink/40'}`}>{label}</span>
+      {active && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-[2px_4px_1px_3px] bg-pantry-teal" />}
+    </button>
+  );
 }
 
 export function InventoryClient({
@@ -63,7 +74,8 @@ export function InventoryClient({
   const [isCompressing, setIsCompressing] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pantry' | 'shopping'>('pantry');
+  const [activeTab, setActiveTab] = useState<'pantry' | 'shopping' | 'history' | 'profile'>('pantry');
+  const [postMortemItem, setPostMortemItem] = useState<GroupedItem | null>(null);
   const [activeLocation, setActiveLocation] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
@@ -147,19 +159,28 @@ export function InventoryClient({
   }
 
   async function handleConsume(item: GroupedItem) {
-    const result = await decrementItemQuantity(item.id, item.quantity);
-    if (result.deleted) {
-      toast(`${item.name} finished.`, {
-        action: { label: "Add to List", onClick: () => addToShoppingList(item) },
-      });
+    if (item.quantity > 1) {
+      await decrementItemQuantity(item.id, item.quantity);
+    } else {
+      setPostMortemItem(item);
     }
   }
 
-  async function handleToss(item: GroupedItem) {
-    await deleteItem(item.id);
-    toast(`${item.name} removed.`, {
-      action: { label: "Add to List", onClick: () => addToShoppingList(item) },
-    });
+  function handleToss(item: GroupedItem) {
+    setDetailItem(null);
+    setPostMortemItem(item);
+  }
+
+  async function handlePostMortemRestock() {
+    if (!postMortemItem) return;
+    await updateItemStatus(postMortemItem.id, 'shopping');
+    setPostMortemItem(null);
+  }
+
+  async function handlePostMortemGraveyard() {
+    if (!postMortemItem) return;
+    await updateItemStatus(postMortemItem.id, 'archived');
+    setPostMortemItem(null);
   }
 
   async function handleReceiptFile(file: File) {
@@ -202,6 +223,9 @@ export function InventoryClient({
   // Extract shopping items
   const shoppingItems = items.filter((item) => item.status === "shopping");
 
+  // Extract graveyard items
+  const graveyardItems = items.filter((item) => item.status === "archived");
+
   // Derive groupedItems from hook items
   const rawGroupedItems: Record<string, GroupedItem[]> = {};
   for (const item of items) {
@@ -214,9 +238,9 @@ export function InventoryClient({
   const processedGroups: Record<string, GroupedItem[]> = {};
 
   Object.entries(rawGroupedItems).forEach(([locationName, items]) => {
-    // Filter shopping items out of pantry view, then filter by search query
+    // Filter shopping and archived items out of pantry view, then filter by search query
     const filtered = items
-      .filter((item) => item.status !== 'shopping')
+      .filter((item) => item.status !== 'shopping' && item.status !== 'archived')
       .filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     // Sort the filtered items
@@ -486,8 +510,12 @@ export function InventoryClient({
             </div>
           </div>
         </>
-      ) : (
+      ) : activeTab === 'shopping' ? (
         <ShoppingList items={shoppingItems} />
+      ) : activeTab === 'history' ? (
+        <GraveyardTab items={graveyardItems} />
+      ) : (
+        null
       )}
 
       {/* Mobile Action Menu */}
@@ -579,6 +607,14 @@ export function InventoryClient({
       {/* Profile settings sheet */}
       <ProfileSettings open={profileOpen} onOpenChange={setProfileOpen} displayName={displayName} email={email} />
 
+      {/* Post-mortem modal */}
+      <PostMortemModal
+        item={postMortemItem}
+        onRestock={handlePostMortemRestock}
+        onGraveyard={handlePostMortemGraveyard}
+        onDismiss={() => setPostMortemItem(null)}
+      />
+
       {/* Hidden file input for receipt photo */}
       <input
         ref={fileInputRef}
@@ -594,42 +630,19 @@ export function InventoryClient({
 
       {/* Mobile bottom navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-pantry-paper border-t-[3px] border-pantry-ink z-50 pb-[env(safe-area-inset-bottom)] flex items-center justify-around h-16 px-2">
-        <button
-          onClick={() => setActiveTab('pantry')}
-          className="relative flex flex-col items-center gap-0.5 px-4 py-2"
-        >
-          <Archive className={`size-5 ${activeTab === 'pantry' ? 'text-pantry-teal' : 'text-pantry-ink/40'}`} />
-          <span className={`text-xs font-handwritten font-semibold ${activeTab === 'pantry' ? 'text-pantry-teal' : 'text-pantry-ink/40'}`}>
-            Pantry
-          </span>
-          {activeTab === 'pantry' && (
-            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-[2px_4px_1px_3px] bg-pantry-teal" />
-          )}
-        </button>
+        <NavTab icon={Archive} label="Stock" active={activeTab === 'pantry'} onClick={() => setActiveTab('pantry')} />
+        <NavTab icon={ShoppingCart} label="Shopping" active={activeTab === 'shopping'} onClick={() => setActiveTab('shopping')} />
 
-        {/* Breakout FAB */}
+        {/* Center FAB */}
         <button
-          className="absolute left-1/2 -translate-x-1/2 -top-5 w-14 h-14 bg-pantry-mustard text-pantry-ink rounded-full flex items-center justify-center border-[3px] border-pantry-ink shadow-[3px_3px_0px_0px_#1E293B] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] transition-all z-50"
+          className="relative -top-5 w-14 h-14 bg-pantry-mustard text-pantry-ink rounded-full flex items-center justify-center border-[3px] border-pantry-ink shadow-[3px_3px_0px_0px_#1E293B] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] transition-all z-50 shrink-0"
           onClick={() => setActionMenuOpen(true)}
         >
           <Plus className="size-6" />
         </button>
 
-        {/* Spacer to keep flex layout symmetric */}
-        <div className="w-14" />
-
-        <button
-          onClick={() => setActiveTab('shopping')}
-          className="relative flex flex-col items-center gap-0.5 px-4 py-2"
-        >
-          <ShoppingCart className={`size-5 ${activeTab === 'shopping' ? 'text-pantry-teal' : 'text-pantry-ink/40'}`} />
-          <span className={`text-xs font-handwritten font-semibold ${activeTab === 'shopping' ? 'text-pantry-teal' : 'text-pantry-ink/40'}`}>
-            Shopping
-          </span>
-          {activeTab === 'shopping' && (
-            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-[2px_4px_1px_3px] bg-pantry-teal" />
-          )}
-        </button>
+        <NavTab icon={Clock} label="History" active={activeTab === 'history'} onClick={() => setActiveTab('history')} />
+        <NavTab icon={User} label="Profile" active={false} onClick={() => setProfileOpen(true)} />
       </nav>
     </main>
   );

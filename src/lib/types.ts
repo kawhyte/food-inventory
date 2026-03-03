@@ -1,4 +1,4 @@
-export type ItemStatus = "available" | "low" | "expired" | "consumed" | "shopping";
+export type ItemStatus = "available" | "low" | "expired" | "consumed" | "shopping" | "archived";
 
 export interface ItemFormValues {
   name: string;

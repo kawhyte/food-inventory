@@ -159,6 +159,25 @@ export async function deleteItem(id: string): Promise<{ error?: string }> {
   return {};
 }
 
+export async function updateItemStatus(
+  id: string,
+  status: 'shopping' | 'archived' | 'available'
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const householdId = await getHouseholdId(supabase);
+  if (!householdId) return { error: "Not authenticated" };
+
+  const { error } = await supabase
+    .from("items")
+    .update({ status })
+    .eq("id", id)
+    .eq("household_id", householdId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/dashboard');
+  return {};
+}
+
 export async function processRestock(
   updates: { id: string; quantity: number; expiry_date: string }[]
 ): Promise<{ error?: string }> {

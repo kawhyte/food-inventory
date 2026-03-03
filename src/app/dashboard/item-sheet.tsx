@@ -86,7 +86,7 @@ const itemSchema = z.object({
   location_id: z.string().min(1, "Please select a location"),
   category_id: z.string().optional(),
   expiry_date: z.string().optional(),
-  status: z.enum(["available", "low", "expired", "consumed", "shopping"]),
+  status: z.enum(["available", "low", "expired", "consumed", "shopping", "archived"]),
   barcode: z.string().optional(),
   image_url: z.string().optional(),
   is_perishable: z.boolean(),
