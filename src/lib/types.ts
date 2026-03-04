@@ -28,6 +28,7 @@ export interface GroupedItem {
   image_url: string | null;
   is_perishable: boolean | null;
   needs_restock: boolean | null;
+  updated_at: string | null;
 }
 
 export interface LocationRow {

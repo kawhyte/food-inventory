@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useInfiniteInventory } from "@/hooks/use-infinite-inventory";
-import { Plus, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost, Clock, User } from "lucide-react";
+import { Plus, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost, Clock, BarChart2 } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
@@ -25,6 +25,7 @@ import { deleteItem, decrementItemQuantity, handleItemLifecycle } from "@/app/da
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { PostMortemModal } from "./post-mortem-modal";
 import { GraveyardTab } from "./graveyard-tab";
+import { InsightsTab } from "./insights-tab";
 import imageCompression from "browser-image-compression";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { GroupedItem, LocationRow, CategoryRow, ScanResult } from "@/lib/types";
@@ -75,7 +76,7 @@ export function InventoryClient({
   const [isCompressing, setIsCompressing] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pantry' | 'shopping' | 'history' | 'profile'>('pantry');
+  const [activeTab, setActiveTab] = useState<'pantry' | 'shopping' | 'history' | 'insights'>('pantry');
   const [postMortemItem, setPostMortemItem] = useState<GroupedItem | null>(null);
   const [showRestockConfetti, setShowRestockConfetti] = useState(false);
   const [activeLocation, setActiveLocation] = useState<string>("All");
@@ -520,9 +521,9 @@ export function InventoryClient({
         <ShoppingList items={shoppingItems} />
       ) : activeTab === 'history' ? (
         <GraveyardTab items={graveyardItems} />
-      ) : (
-        null
-      )}
+      ) : activeTab === 'insights' ? (
+        <InsightsTab items={items} />
+      ) : null}
 
       {/* Mobile Action Menu */}
       <Sheet open={actionMenuOpen} onOpenChange={setActionMenuOpen}>
@@ -651,7 +652,7 @@ export function InventoryClient({
         </button>
 
         <NavTab icon={Clock} label="History" active={activeTab === 'history'} onClick={() => setActiveTab('history')} />
-        <NavTab icon={User} label="Profile" active={false} onClick={() => setProfileOpen(true)} />
+        <NavTab icon={BarChart2} label="Insights" active={activeTab === 'insights'} onClick={() => setActiveTab('insights')} />
       </nav>
     </main>
   );
