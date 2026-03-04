@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { GroupedItem } from "@/lib/types";
@@ -11,6 +12,7 @@ interface FoodItemCardProps {
   item: GroupedItem;
   onEdit: (item: GroupedItem) => void;
   onOpenDetail: (item: GroupedItem) => void;
+  onArchive: (id: string) => void;
 }
 
 function getDaysUntilExpiry(expiryDate: string): number {
@@ -31,8 +33,17 @@ function getCategoryColor(categoryName?: string): string {
   return "bg-pantry-mustard";
 }
 
-export function FoodItemCard({ item, onEdit, onOpenDetail }: FoodItemCardProps) {
+const ARCHIVE_THRESHOLD = -100;
+const MAX_DRAG = -150;
+
+export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive }: FoodItemCardProps) {
   const [isPending, setIsPending] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const touchStartX = useRef(0);
+  const currentOffset = useRef(0);
+  const didSwipe = useRef(false);
 
   const daysUntil = item.expiry_date ? getDaysUntilExpiry(item.expiry_date) : null;
   const isPast = item.expiry_date ? new Date() > new Date(item.expiry_date) : false;
@@ -60,6 +71,32 @@ export function FoodItemCard({ item, onEdit, onOpenDetail }: FoodItemCardProps) 
   const unit = item.unit ?? "units";
   const categoryName = item.categories?.name ?? "Other";
   const categoryColor = getCategoryColor(item.categories?.name);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    currentOffset.current = swipeOffset;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const deltaX = e.touches[0].clientX - touchStartX.current;
+    const newOffset = Math.max(MAX_DRAG, Math.min(0, currentOffset.current + deltaX));
+    setSwipeOffset(newOffset);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    const totalDelta = Math.abs(swipeOffset - currentOffset.current);
+    if (totalDelta > 5) didSwipe.current = true;
+
+    if (swipeOffset < ARCHIVE_THRESHOLD) {
+      setIsArchiving(true);
+      setSwipeOffset(-300);
+      setTimeout(() => onArchive(item.id), 300);
+    } else {
+      setSwipeOffset(0);
+    }
+  };
 
   const handleIncrement = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -99,57 +136,76 @@ export function FoodItemCard({ item, onEdit, onOpenDetail }: FoodItemCardProps) 
         {categoryName}
       </div>
 
-      {/* Card */}
-      <div
-        className="bg-white border-2 border-pantry-ink rounded-xl shadow-[4px_4px_0px_0px_#1E293B] flex items-center gap-3 p-3 cursor-pointer active:shadow-[2px_2px_0px_0px_#1E293B] active:translate-x-[2px] active:translate-y-[2px] transition-all"
-        onClick={() => onOpenDetail(item)}
-      >
-        {/* Left — product image or placeholder */}
-        {item.image_url ? (
-          <img
-            src={item.image_url}
-            alt={item.name}
-            className="aspect-square w-14 shrink-0 rounded-lg object-cover"
-          />
-        ) : (
-          <div className="doodle-icon-placeholder aspect-square w-14 shrink-0 rounded-lg border-2 border-dashed border-pantry-ink/40" />
-        )}
-
-        {/* Center — item info */}
-        <div className="flex-1 min-w-0">
-          <p className="font-handwritten font-bold text-lg text-pantry-ink truncate">{item.name}</p>
-          <p className="text-xs text-pantry-ink/60">
-            {qty} {unit} · {categoryName}
-          </p>
-          {expiryText && (
-            <p className={cn("text-xs", expiryColor)}>{expiryText}</p>
-          )}
+      {/* Clipping wrapper — coral reveal lives here */}
+      <div className="relative overflow-hidden rounded-xl">
+        {/* Coral reveal layer */}
+        <div className="absolute inset-0 bg-pantry-coral flex items-center justify-end pr-5">
+          <Trash2 className="size-6 text-pantry-ink animate-wobble" />
         </div>
 
-        {/* Right — quantity stepper (horizontal: − qty +) */}
+        {/* Card (translates on drag) */}
         <div
-          className="flex flex-row items-center gap-2 shrink-0"
-          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            "bg-white border-2 border-pantry-ink rounded-xl shadow-[4px_4px_0px_0px_#1E293B] flex items-center gap-3 p-3 cursor-pointer active:shadow-[2px_2px_0px_0px_#1E293B]",
+            isDragging ? "transition-none" : "transition-all duration-200",
+            isArchiving && "opacity-0 pointer-events-none"
+          )}
+          style={{ transform: `translateX(${swipeOffset}px)` }}
+          onClick={() => {
+            if (didSwipe.current) { didSwipe.current = false; return; }
+            onOpenDetail(item);
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleDecrement}
-            className="w-8 h-8 rounded-full border-2 border-pantry-ink flex items-center justify-center font-bold text-lg leading-none active:bg-pantry-ink/10 disabled:opacity-50"
-            aria-label="Decrease quantity"
+          {/* Left — product image or placeholder */}
+          {item.image_url ? (
+            <img
+              src={item.image_url}
+              alt={item.name}
+              className="aspect-square w-14 shrink-0 rounded-lg object-cover"
+            />
+          ) : (
+            <div className="doodle-icon-placeholder aspect-square w-14 shrink-0 rounded-lg border-2 border-dashed border-pantry-ink/40" />
+          )}
+
+          {/* Center — item info */}
+          <div className="flex-1 min-w-0">
+            <p className="font-handwritten font-bold text-lg text-pantry-ink truncate">{item.name}</p>
+            <p className="text-xs text-pantry-ink/60">
+              {qty} {unit} · {categoryName}
+            </p>
+            {expiryText && (
+              <p className={cn("text-xs", expiryColor)}>{expiryText}</p>
+            )}
+          </div>
+
+          {/* Right — quantity stepper (horizontal: − qty +) */}
+          <div
+            className="flex flex-row items-center gap-2 shrink-0"
+            onClick={(e) => e.stopPropagation()}
           >
-            −
-          </button>
-          <span className="text-sm font-bold tabular-nums w-5 text-center">{qty}</span>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleIncrement}
-            className="w-8 h-8 rounded-full border-2 border-pantry-ink flex items-center justify-center font-bold text-lg leading-none active:bg-pantry-ink/10 disabled:opacity-50"
-            aria-label="Increase quantity"
-          >
-            +
-          </button>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={handleDecrement}
+              className="w-8 h-8 rounded-full border-2 border-pantry-ink flex items-center justify-center font-bold text-lg leading-none active:bg-pantry-ink/10 disabled:opacity-50"
+              aria-label="Decrease quantity"
+            >
+              −
+            </button>
+            <span className="text-sm font-bold tabular-nums w-5 text-center">{qty}</span>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={handleIncrement}
+              className="w-8 h-8 rounded-full border-2 border-pantry-ink flex items-center justify-center font-bold text-lg leading-none active:bg-pantry-ink/10 disabled:opacity-50"
+              aria-label="Increase quantity"
+            >
+              +
+            </button>
+          </div>
         </div>
       </div>
     </div>

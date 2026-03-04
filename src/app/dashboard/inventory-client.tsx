@@ -22,7 +22,10 @@ import { ReceiptSheet } from "@/app/dashboard/receipt-sheet";
 import { ShoppingList } from "@/app/dashboard/shopping-list";
 import { ProfileSettings } from "@/app/dashboard/profile-settings";
 import { deleteItem, decrementItemQuantity, handleItemLifecycle } from "@/app/dashboard/actions";
+import { toast } from "sonner";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
+import { vibrateLight } from "@/lib/haptics";
 import { PostMortemModal } from "./post-mortem-modal";
 import { GraveyardTab } from "./graveyard-tab";
 import { InsightsTab } from "./insights-tab";
@@ -46,7 +49,7 @@ interface InventoryClientProps {
 
 function NavTab({ icon: Icon, label, active, onClick }: { icon: React.ElementType; label: string; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="relative flex flex-col items-center gap-0.5 px-3 py-2 shrink-0">
+    <button onClick={() => { vibrateLight(); onClick(); }} className="relative flex flex-col items-center gap-0.5 px-3 py-2 shrink-0 active:opacity-70 transition-opacity">
       <Icon className={`size-5 ${active ? 'text-pantry-teal' : 'text-pantry-ink/40'}`} />
       <span className={`text-xs font-handwritten font-semibold ${active ? 'text-pantry-teal' : 'text-pantry-ink/40'}`}>{label}</span>
       {active && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-[2px_4px_1px_3px] bg-pantry-teal" />}
@@ -186,6 +189,11 @@ export function InventoryClient({
     if (!postMortemItem) return;
     await handleItemLifecycle(postMortemItem.id, 'ARCHIVE');
     setPostMortemItem(null);
+  }
+
+  async function handleSwipeArchive(itemId: string) {
+    await handleItemLifecycle(itemId, 'ARCHIVE');
+    toast('Moved to graveyard');
   }
 
   async function handleReceiptFile(file: File) {
@@ -441,6 +449,7 @@ export function InventoryClient({
           )}
 
           {/* Item list */}
+          <PullToRefresh onRefresh={reset}>
           <div className="pb-28 md:pb-8">
             {isLoading && items.length === 0 ? (
               viewMode === "list" ? (
@@ -494,7 +503,7 @@ export function InventoryClient({
                   </div>
                   <div className="flex flex-col gap-6 px-4 py-3 bg-pantry-paper" ref={listRef}>
                     {processedGroups[locationName].map((item) => (
-                      <FoodItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} />
+                      <FoodItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onArchive={handleSwipeArchive} />
                     ))}
                   </div>
                 </div>
@@ -516,9 +525,12 @@ export function InventoryClient({
               )}
             </div>
           </div>
+          </PullToRefresh>
         </>
       ) : activeTab === 'shopping' ? (
-        <ShoppingList items={shoppingItems} />
+        <PullToRefresh onRefresh={reset}>
+          <ShoppingList items={shoppingItems} onArchive={handleSwipeArchive} />
+        </PullToRefresh>
       ) : activeTab === 'history' ? (
         <GraveyardTab items={graveyardItems} />
       ) : activeTab === 'insights' ? (
@@ -646,7 +658,7 @@ export function InventoryClient({
         {/* Center FAB */}
         <button
           className="relative -top-5 w-14 h-14 bg-pantry-mustard text-pantry-ink rounded-full flex items-center justify-center border-[3px] border-pantry-ink shadow-[3px_3px_0px_0px_#1E293B] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] transition-all z-50 shrink-0"
-          onClick={() => setActionMenuOpen(true)}
+          onClick={() => { vibrateLight(); setActionMenuOpen(true); }}
         >
           <Plus className="size-6" />
         </button>

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Trash2, AlertCircle, Minus, Plus } from "lucide-react";
+import { vibrateSuccess } from "@/lib/haptics";
 
 import {
   Sheet,
@@ -157,6 +158,7 @@ export function ItemSheet({
       if (result.error) {
         setServerError(result.error);
       } else {
+        vibrateSuccess();
         if (!isEditing) {
           setShowConfetti(true);
           setTimeout(() => setShowConfetti(false), 2000);

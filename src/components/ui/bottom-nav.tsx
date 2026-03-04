@@ -24,7 +24,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             <button
               key={tab.id}
               onClick={() => onTabChange?.(tab.id)}
-              className="flex flex-col items-center gap-1"
+              className="flex flex-col items-center gap-1 active:opacity-70 transition-opacity"
             >
               <div className="w-8 h-8 border-2 border-dashed border-pantry-ink/40 rounded-lg flex items-center justify-center">
                 <Icon className="w-4 h-4 text-pantry-ink/60" />
@@ -36,7 +36,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         {/* FAB */}
         <button
           onClick={() => onTabChange?.("add")}
-          className="absolute left-1/2 -translate-x-1/2 -top-7 w-14 h-14 rounded-full bg-pantry-mustard border-2 border-pantry-ink shadow-[4px_4px_0px_0px_#1E293B] flex items-center justify-center"
+          className="absolute left-1/2 -translate-x-1/2 -top-7 w-14 h-14 rounded-full bg-pantry-mustard border-2 border-pantry-ink shadow-[4px_4px_0px_0px_#1E293B] flex items-center justify-center active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all"
         >
           <Plus className="w-6 h-6 text-pantry-ink" />
         </button>
@@ -50,7 +50,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             <button
               key={tab.id}
               onClick={() => onTabChange?.(tab.id)}
-              className="flex flex-col items-center gap-1"
+              className="flex flex-col items-center gap-1 active:opacity-70 transition-opacity"
             >
               <div className="w-8 h-8 border-2 border-dashed border-pantry-ink/40 rounded-lg flex items-center justify-center">
                 <Icon className="w-4 h-4 text-pantry-ink/60" />

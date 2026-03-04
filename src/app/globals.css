@@ -59,6 +59,7 @@
   /* Custom animations */
   --animate-gentle-bounce: gentle-bounce 3s ease-in-out infinite;
   --animate-fade-in: fade-in 0.8s ease-out forwards;
+  --animate-wobble: wobble 0.5s ease-in-out infinite;
 }
 
 :root {
@@ -141,6 +142,10 @@
   }
 }
 
+@keyframes wobble {
+  0%, 100% { transform: rotate(-8deg); }
+  50%       { transform: rotate(8deg); }
+}
 @keyframes gentle-bounce {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-8px); }
