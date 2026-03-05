@@ -113,6 +113,7 @@ export async function incrementItemQuantity(
     .update({ quantity: currentQuantity + 1 })
     .eq("id", id);
   if (error) return { error: error.message };
+  revalidatePath('/dashboard');
   return {};
 }
 

@@ -47,9 +47,11 @@ function checkBinariesExist() {
   const projectRoot = path.resolve(__dirname, '..');
 
   // Check for all native binaries needed on M1 Mac
+  // lightningcss needs BOTH the package AND the .node file in the right place
+  const arm64NodeFile = path.join(projectRoot, 'node_modules', 'lightningcss', 'lightningcss.darwin-arm64.node');
   return {
     lightningcss: {
-      arm64: fs.existsSync(path.join(projectRoot, 'node_modules', 'lightningcss-darwin-arm64')),
+      arm64: fs.existsSync(path.join(projectRoot, 'node_modules', 'lightningcss-darwin-arm64')) && fs.existsSync(arm64NodeFile),
       x64: fs.existsSync(path.join(projectRoot, 'node_modules', 'lightningcss-darwin-x64'))
     },
     tailwindcssOxide: {
@@ -65,6 +67,12 @@ function main() {
 
     // Special handling for M1 Mac running x64 Node.js via Rosetta
     if (isMacM1() && process.arch === 'x64') {
+      // Always clean .next to prevent stale Turbopack cache (even when binaries are already installed)
+      const nextDir = path.join(projectRoot, '.next');
+      if (removeDir(nextDir)) {
+        log('   ✓ Removed .next (M1+x64: ensuring fresh Turbopack build)', colors.green);
+      }
+
       const binaries = checkBinariesExist();
       const missingBinaries = [];
 
@@ -83,31 +91,40 @@ function main() {
         log('\n⚡ M1 Mac Detected - Installing arm64 Binaries', colors.yellow);
         log('   (Running Node.js in x64 mode via Rosetta)\n', colors.yellow);
 
-        // Clean caches
-        const dirsToClean = [
-          path.join(projectRoot, '.next'),
-          path.join(projectRoot, 'node_modules', '.cache')
-        ];
-
-        for (const dir of dirsToClean) {
-          if (removeDir(dir)) {
-            log(`   ✓ Removed ${path.basename(dir)}`, colors.green);
-          }
+        // Clean node_modules/.cache when installing binaries
+        if (removeDir(path.join(projectRoot, 'node_modules', '.cache'))) {
+          log('   ✓ Removed node_modules/.cache', colors.green);
         }
 
-        // Install missing binaries
+        // Install missing binaries via pack+extract (bypasses npm's platform skip for optionalDeps)
+        const os2 = require('os');
+        const tmpDir = os2.tmpdir();
         log('', colors.reset);
         for (const binary of missingBinaries) {
           log(`   Installing ${binary.name}@${binary.version}...`, colors.yellow);
           try {
-            // Use --force to bypass platform checks, allow saving to package.json
-            execSync(`npm install --force ${binary.name}@${binary.version}`, {
-              cwd: projectRoot,
-              stdio: 'pipe' // Hide npm output to keep logs clean
+            // npm install --force says "up to date" for optional deps on wrong platform.
+            // Pack the tarball and extract directly instead.
+            execSync(`npm pack ${binary.name}@${binary.version}`, {
+              cwd: tmpDir,
+              stdio: 'pipe'
             });
+            const safeName = binary.name.replace('@', '').replace(/\//g, '-');
+            const tarball = path.join(tmpDir, `${safeName}-${binary.version}.tgz`);
+            const destDir = path.join(projectRoot, 'node_modules', ...binary.name.split('/'));
+            fs.mkdirSync(path.dirname(destDir), { recursive: true });
+            if (fs.existsSync(destDir)) fs.rmSync(destDir, { recursive: true, force: true });
+            execSync(`tar -xzf ${tarball} -C ${tmpDir}`, { stdio: 'pipe' });
+            fs.renameSync(path.join(tmpDir, 'package'), destDir);
+            // Also copy .node file to lightningcss root for the fallback require path
+            if (binary.name === 'lightningcss-darwin-arm64') {
+              const src = path.join(destDir, 'lightningcss.darwin-arm64.node');
+              const dst = path.join(projectRoot, 'node_modules', 'lightningcss', 'lightningcss.darwin-arm64.node');
+              if (fs.existsSync(src)) fs.copyFileSync(src, dst);
+            }
             log(`   ✓ ${binary.name} installed`, colors.green);
           } catch (err) {
-            log(`   ⚠ Failed to install ${binary.name}`, colors.red);
+            log(`   ⚠ Failed to install ${binary.name}: ${err.message}`, colors.red);
           }
         }
 

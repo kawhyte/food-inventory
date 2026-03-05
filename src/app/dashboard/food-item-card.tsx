@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -37,6 +39,8 @@ const ARCHIVE_THRESHOLD = -100;
 const MAX_DRAG = -150;
 
 export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive }: FoodItemCardProps) {
+  const router = useRouter();
+  const [optimisticQuantity, setOptimisticQuantity] = useState(item.quantity);
   const [isPending, setIsPending] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -67,7 +71,6 @@ export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive }: FoodItem
     expiryColor = "text-amber-500";
   }
 
-  const qty = item.quantity;
   const unit = item.unit ?? "units";
   const categoryName = item.categories?.name ?? "Other";
   const categoryColor = getCategoryColor(item.categories?.name);
@@ -100,27 +103,34 @@ export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive }: FoodItem
 
   const handleIncrement = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    const prev = optimisticQuantity;
+    setOptimisticQuantity(prev + 1);
     setIsPending(true);
-    const result = await incrementItemQuantity(item.id, qty);
+    const result = await incrementItemQuantity(item.id, prev);
     setIsPending(false);
     if (result.error) {
-      toast.error(result.error);
+      setOptimisticQuantity(prev);
+      toast.error("Oops! Couldn't update. Try again.");
     } else {
-      toast(`${item.name} +1`);
+      router.refresh();
     }
   };
 
   const handleDecrement = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    const prev = optimisticQuantity;
+    setOptimisticQuantity(Math.max(0, prev - 1));
     setIsPending(true);
-    const result = await decrementItemQuantity(item.id, qty);
+    const result = await decrementItemQuantity(item.id, prev);
     setIsPending(false);
     if (result.error) {
-      toast.error(result.error);
+      setOptimisticQuantity(prev);
+      toast.error("Oops! Couldn't update. Try again.");
     } else if (result.deleted) {
       toast(`${item.name} removed.`);
+      router.refresh();
     } else {
-      toast(`${item.name} −1`);
+      router.refresh();
     }
   };
 
@@ -174,7 +184,7 @@ export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive }: FoodItem
           <div className="flex-1 min-w-0">
             <p className="font-handwritten font-bold text-lg text-pantry-ink truncate">{item.name}</p>
             <p className="text-xs text-pantry-ink/60">
-              {qty} {unit} · {categoryName}
+              {optimisticQuantity} {unit} · {categoryName}
             </p>
             {expiryText && (
               <p className={cn("text-xs", expiryColor)}>{expiryText}</p>
@@ -195,7 +205,15 @@ export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive }: FoodItem
             >
               −
             </button>
-            <span className="text-sm font-bold tabular-nums w-5 text-center">{qty}</span>
+            <motion.span
+              key={optimisticQuantity}
+              initial={{ scale: 0.5, opacity: 0.5 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="text-sm font-bold font-handwritten tabular-nums w-5 text-center text-pantry-ink"
+            >
+              {optimisticQuantity}
+            </motion.span>
             <button
               type="button"
               disabled={isPending}
