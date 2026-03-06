@@ -181,7 +181,7 @@ export async function updateItemStatus(
 
 export async function handleItemLifecycle(
   id: string,
-  action: 'RESTOCK' | 'ARCHIVE'
+  action: 'RESTOCK' | 'ARCHIVE' | 'RESTORE'
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const householdId = await getHouseholdId(supabase);
@@ -190,6 +190,8 @@ export async function handleItemLifecycle(
   const update =
     action === 'RESTOCK'
       ? { status: 'available' as const, needs_restock: true, quantity: 0 }
+      : action === 'RESTORE'
+      ? { status: 'available' as const, needs_restock: false }
       : { status: 'archived' as const, needs_restock: false };
 
   const { error } = await supabase

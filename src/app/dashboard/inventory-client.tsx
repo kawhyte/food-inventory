@@ -202,10 +202,19 @@ export function InventoryClient({
     setRemovedIds(prev => new Set(prev).add(id));
   }, []);
 
+  async function handleRestoreItem(id: string) {
+    await handleItemLifecycle(id, 'RESTORE');
+    setRemovedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+    reset();
+  }
+
   async function handleSwipeArchive(itemId: string) {
     await handleItemLifecycle(itemId, 'ARCHIVE');
     handleRemoveItem(itemId);
-    toast('Moved to graveyard');
+    toast('Moved to graveyard', {
+      action: { label: 'Undo', onClick: () => handleRestoreItem(itemId) },
+      duration: 5000,
+    });
   }
 
   async function handleReceiptFile(file: File) {
@@ -563,7 +572,7 @@ export function InventoryClient({
           <ShoppingList items={shoppingItems} onArchive={handleSwipeArchive} />
         </PullToRefresh>
       ) : activeTab === 'history' ? (
-        <GraveyardTab items={graveyardItems} />
+        <GraveyardTab items={graveyardItems} onRestore={handleRestoreItem} />
       ) : activeTab === 'insights' ? (
         <InsightsTab items={items} />
       ) : null}

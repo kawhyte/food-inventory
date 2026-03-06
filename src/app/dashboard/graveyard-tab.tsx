@@ -1,12 +1,13 @@
 "use client";
-import { Ghost } from "lucide-react";
+import { Ghost, RotateCcw } from "lucide-react";
 import type { GroupedItem } from "@/lib/types";
 
 interface GraveyardTabProps {
   items: GroupedItem[];
+  onRestore?: (id: string) => void;
 }
 
-export function GraveyardTab({ items }: GraveyardTabProps) {
+export function GraveyardTab({ items, onRestore }: GraveyardTabProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 px-6 text-center">
@@ -19,7 +20,7 @@ export function GraveyardTab({ items }: GraveyardTabProps) {
 
   return (
     <div className="px-4 py-4 flex flex-col gap-3 pb-28">
-      <p className="font-handwritten text-pantry-ink/40 text-xs px-1">{items.length} item{items.length !== 1 ? "s" : ""} archived</p>
+      <p className="font-handwritten text-pantry-ink/40 text-xs px-1">Items tossed or finished — kept for your records</p>
       {items.map((item) => (
         <div
           key={item.id}
@@ -32,9 +33,20 @@ export function GraveyardTab({ items }: GraveyardTabProps) {
               <p className="font-handwritten text-xs text-pantry-ink/50">{item.categories.name}</p>
             )}
           </div>
-          <span className="text-xs font-handwritten text-pantry-ink/40 shrink-0">
-            {item.quantity} {item.unit ?? "units"}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-handwritten text-pantry-ink/40">
+              {item.quantity} {item.unit ?? "units"}
+            </span>
+            {onRestore && (
+              <button
+                onClick={() => onRestore(item.id)}
+                className="p-1.5 rounded-lg border border-pantry-ink/20 hover:border-pantry-ink/50 hover:bg-pantry-paper transition-colors"
+                title="Restore to pantry"
+              >
+                <RotateCcw className="size-3.5 text-pantry-ink/50" />
+              </button>
+            )}
+          </div>
         </div>
       ))}
     </div>
