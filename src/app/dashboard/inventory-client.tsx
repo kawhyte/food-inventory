@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useInfiniteInventory } from "@/hooks/use-infinite-inventory";
-import { Plus, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost, BarChart2 } from "lucide-react";
+import { Plus, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost, BarChart2 } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
@@ -337,7 +337,7 @@ export function InventoryClient({
       {/* Header */}
       <div className="sticky top-0 z-30 bg-background px-4 py-3 flex items-center justify-between">
         <h1 className="font-handwritten font-bold text-xl text-pantry-ink flex items-center gap-2">
-          <ShoppingBasket className="size-5 text-pantry-teal" />
+          <img src="/doodle-logo.svg" className="h-6 w-auto" alt="Pantry Pal" />
           Pantry Pal
         </h1>
         <div className="flex items-center gap-2">
