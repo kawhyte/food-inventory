@@ -66,6 +66,7 @@ interface ItemSheetProps {
   locations: LocationRow[];
   categories: CategoryRow[];
   scanData?: ScanResult;
+  onSuccess?: () => void;
 }
 
 export function ItemSheet({
@@ -75,6 +76,7 @@ export function ItemSheet({
   locations,
   categories,
   scanData,
+  onSuccess,
 }: ItemSheetProps) {
   const isEditing = !!item;
   const router = useRouter();
@@ -164,6 +166,7 @@ export function ItemSheet({
           setTimeout(() => setShowConfetti(false), 2000);
         }
         router.refresh();
+        onSuccess?.();
         onOpenChange(false);
       }
     });

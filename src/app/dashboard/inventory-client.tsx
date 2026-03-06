@@ -617,6 +617,7 @@ export function InventoryClient({
         locations={locations}
         categories={categories}
         scanData={scanData ?? undefined}
+        onSuccess={reset}
       />
 
       {/* Receipt review sheet */}
