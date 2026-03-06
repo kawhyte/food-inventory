@@ -34,13 +34,13 @@ export function ItemRow({ item, onEdit, onOpenDetail }: ItemRowProps) {
   const isSoftExpired = isPast && daysPast <= graceDays && graceDays > 0;
 
   const formattedExpiryDate = item.expiry_date
-    ? new Date(item.expiry_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    ? new Date(item.expiry_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : '';
   const safeDate = item.expiry_date
     ? new Date(new Date(item.expiry_date).getTime() + graceDays * 24 * 60 * 60 * 1000)
     : null;
   const formattedSafeDate = safeDate
-    ? safeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    ? safeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : '';
 
   // Swipe state
