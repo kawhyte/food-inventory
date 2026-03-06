@@ -262,6 +262,7 @@ export function InventoryClient({
     // Filter shopping, archived, and needs_restock items out of pantry view, then filter by search query
     const filtered = items
       .filter((item) => item.status !== 'shopping' && item.status !== 'archived' && !item.needs_restock)
+      .filter((item) => !removedIds.has(item.id))
       .filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     // Sort the filtered items
