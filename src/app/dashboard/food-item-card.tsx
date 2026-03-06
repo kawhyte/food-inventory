@@ -16,6 +16,7 @@ interface FoodItemCardProps {
   onOpenDetail: (item: GroupedItem) => void;
   onArchive: (id: string) => void;
   onRemove?: (id: string) => void;
+  onConsumed?: (item: GroupedItem) => void;
 }
 
 function getDaysUntilExpiry(expiryDate: string): number {
@@ -39,7 +40,7 @@ function getCategoryColor(categoryName?: string): string {
 const ARCHIVE_THRESHOLD = -100;
 const MAX_DRAG = -150;
 
-export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive, onRemove }: FoodItemCardProps) {
+export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive, onRemove, onConsumed }: FoodItemCardProps) {
   const router = useRouter();
   const [optimisticQuantity, setOptimisticQuantity] = useState(item.quantity);
   const [isPending, setIsPending] = useState(false);
@@ -120,17 +121,19 @@ export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive, onRemove }
   const handleDecrement = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const prev = optimisticQuantity;
-    setOptimisticQuantity(Math.max(0, prev - 1));
+
+    if (prev <= 1) {
+      onConsumed?.(item);
+      return;
+    }
+
+    setOptimisticQuantity(prev - 1);
     setIsPending(true);
     const result = await decrementItemQuantity(item.id, prev);
     setIsPending(false);
     if (result.error) {
       setOptimisticQuantity(prev);
       toast.error("Oops! Couldn't update. Try again.");
-    } else if (result.deleted) {
-      toast(`${item.name} removed.`);
-      onRemove?.(item.id);
-      router.refresh();
     } else {
       router.refresh();
     }

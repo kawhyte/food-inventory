@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useInfiniteInventory } from "@/hooks/use-infinite-inventory";
-import { Plus, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost, Clock, BarChart2 } from "lucide-react";
+import { Plus, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost, BarChart2 } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 
 import { createClient } from "@/lib/supabase/client";
@@ -189,7 +189,9 @@ export function InventoryClient({
 
   async function handlePostMortemGraveyard() {
     if (!postMortemItem) return;
-    await handleItemLifecycle(postMortemItem.id, 'ARCHIVE');
+    const id = postMortemItem.id;
+    await handleItemLifecycle(id, 'ARCHIVE');
+    handleRemoveItem(id);
     setPostMortemItem(null);
   }
 
@@ -199,6 +201,7 @@ export function InventoryClient({
 
   async function handleSwipeArchive(itemId: string) {
     await handleItemLifecycle(itemId, 'ARCHIVE');
+    handleRemoveItem(itemId);
     toast('Moved to graveyard');
   }
 
@@ -525,6 +528,7 @@ export function InventoryClient({
                               onOpenDetail={setDetailItem}
                               onArchive={handleSwipeArchive}
                               onRemove={handleRemoveItem}
+                              onConsumed={setPostMortemItem}
                             />
                           </motion.div>
                         ))}
@@ -688,7 +692,7 @@ export function InventoryClient({
           <Plus className="size-6" />
         </button>
 
-        <NavTab icon={Clock} label="History" active={activeTab === 'history'} onClick={() => setActiveTab('history')} />
+        <NavTab icon={Ghost} label="Graveyard" active={activeTab === 'history'} onClick={() => setActiveTab('history')} />
         <NavTab icon={BarChart2} label="Insights" active={activeTab === 'insights'} onClick={() => setActiveTab('insights')} />
       </nav>
     </main>
