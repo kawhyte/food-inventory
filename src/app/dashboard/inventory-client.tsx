@@ -181,8 +181,11 @@ export function InventoryClient({
 
   async function handlePostMortemRestock() {
     if (!postMortemItem) return;
-    await handleItemLifecycle(postMortemItem.id, 'RESTOCK');
+    const id = postMortemItem.id;
+    await handleItemLifecycle(id, 'RESTOCK');
+    handleRemoveItem(id);
     setPostMortemItem(null);
+    reset();
     setShowRestockConfetti(true);
     setTimeout(() => setShowRestockConfetti(false), 1400);
   }
