@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { Users, LogOut, Copy } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { signOut } from "@/app/auth/actions";
 import { getUserProfile } from "@/app/dashboard/actions";
 import { toast } from "sonner";
@@ -43,8 +41,12 @@ export function ProfileSettings({ open, onOpenChange, displayName, email }: Prof
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-xl">
-        <SheetHeader className="text-center pb-2">
+      <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0">
+        {/* Drag handle */}
+        <div className="mx-auto mt-1 mb-4 h-1 w-10 rounded-full bg-muted" />
+
+        {/* Identity */}
+        <SheetHeader className="text-center px-6 pb-5">
           <div className="w-16 h-16 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-2xl mx-auto mb-3">
             {initials}
           </div>
@@ -52,33 +54,48 @@ export function ProfileSettings({ open, onOpenChange, displayName, email }: Prof
           <p className="text-sm text-muted-foreground">{email}</p>
         </SheetHeader>
 
-        <Separator className="my-4" />
+        {/* Grouped sections */}
+        <div className="px-4 space-y-3 pb-8 pb-[calc(2rem+env(safe-area-inset-bottom))]">
 
-        <div className="space-y-4">
+          {/* Household section */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Household</p>
-            <p className="text-sm font-medium">{householdName ?? "Loading…"}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-1">Household</p>
+            <div className="rounded-xl bg-muted/40 overflow-hidden divide-y divide-border">
+              <div className="flex items-center px-4 py-3">
+                <span className="text-sm font-medium text-foreground">{householdName ?? "Loading…"}</span>
+              </div>
+              <button
+                className="flex items-center gap-3 w-full px-4 py-3 text-left active:bg-muted/60 disabled:opacity-40 transition-colors"
+                onClick={handleCopyInviteLink}
+                disabled={!inviteCode}
+              >
+                <div className="w-7 h-7 rounded-lg bg-pantry-teal/20 flex items-center justify-center shrink-0">
+                  <Users className="size-4 text-pantry-teal" />
+                </div>
+                <span className="text-sm font-medium flex-1">Copy Invite Link</span>
+                <Copy className="size-4 text-muted-foreground" />
+              </button>
+            </div>
           </div>
 
-          <Button
-            variant="outline"
-            className="w-full justify-start gap-2"
-            onClick={handleCopyInviteLink}
-            disabled={!inviteCode}
-          >
-            <Users className="size-4" />
-            <Copy className="size-4" />
-            Copy Invite Link
-          </Button>
+          {/* Account section */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-1">Account</p>
+            <div className="rounded-xl bg-muted/40 overflow-hidden">
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="flex items-center gap-3 w-full px-4 py-3 text-left active:bg-muted/60 transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-destructive/15 flex items-center justify-center shrink-0">
+                    <LogOut className="size-4 text-destructive" />
+                  </div>
+                  <span className="text-sm font-medium text-destructive">Sign out</span>
+                </button>
+              </form>
+            </div>
+          </div>
 
-          <Separator />
-
-          <form action={signOut}>
-            <Button variant="ghost" type="submit" className="w-full justify-start gap-2 text-destructive hover:text-destructive">
-              <LogOut className="size-4" />
-              Sign out
-            </Button>
-          </form>
         </div>
       </SheetContent>
     </Sheet>

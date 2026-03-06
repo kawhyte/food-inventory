@@ -140,7 +140,7 @@ export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive, onRemove, 
   };
 
   return (
-    <div className="relative overflow-visible mt-2">
+    <div className="relative overflow-visible mt-4">
       {/* Category sticker */}
       <div
         className={cn(

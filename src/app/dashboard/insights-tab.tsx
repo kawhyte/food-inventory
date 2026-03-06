@@ -42,11 +42,10 @@ function calculateDiversityScore(items: GroupedItem[]): { score: number; present
 }
 
 // SVG layout constants
-const CX = 140;
+const CX = 155;
 const CY = 145;
 const RADII = [30, 50, 70, 90, 110, 130] as const;
 const WOBBLES = [3, -4, 5, -3, 4, -5] as const;
-const LABEL_ANGLE = Math.PI / 6; // 30° from horizontal
 
 function semiArcPath(r: number, w: number): string {
   const k = 0.5523; // cubic bezier kappa for circle approximation
@@ -74,44 +73,38 @@ function DoodleRainbow({ present }: { present: Set<string> }) {
               d={semiArcPath(RADII[i], WOBBLES[i])}
               fill="none"
               stroke={cat.color}
-              strokeWidth={17}
+              strokeWidth={20}
               strokeLinecap="butt"
             />
           );
         })}
-        {/* Ink outlines + labels */}
+        {/* Ink outlines */}
         {CATEGORIES.map((cat, i) => {
-          const r = RADII[i];
           const isPresent = present.has(cat.key);
-          const lr = r + 8;
-          const lx = CX + lr * Math.cos(LABEL_ANGLE);
-          const ly = CY - lr * Math.sin(LABEL_ANGLE);
           return (
-            <g key={`arc-${cat.key}`}>
-              <path
-                d={semiArcPath(r, WOBBLES[i])}
-                fill="none"
-                stroke="#1E293B"
-                strokeWidth={1.5}
-                strokeDasharray={isPresent ? undefined : '5 4'}
-                strokeLinecap="round"
-              />
-              <text
-                x={lx}
-                y={ly}
-                fontSize={7.5}
-                fontFamily="var(--font-patrick-hand), cursive"
-                fill={isPresent ? '#1E293B' : '#94A3B8'}
-                dominantBaseline="middle"
-              >
-                {cat.label}
-              </text>
-            </g>
+            <path
+              key={`arc-${cat.key}`}
+              d={semiArcPath(RADII[i], WOBBLES[i])}
+              fill="none"
+              stroke="#1E293B"
+              strokeWidth={1.5}
+              strokeDasharray={isPresent ? undefined : '5 4'}
+              strokeLinecap="round"
+            />
           );
         })}
       </svg>
     </div>
   );
+}
+
+function scoreDescriptor(score: number): string {
+  if (score === 100) return 'Full rainbow!';
+  if (score >= 83)   return 'Almost there';
+  if (score >= 66)   return 'Great variety';
+  if (score >= 50)   return 'Good mix';
+  if (score >= 33)   return 'Building up';
+  return 'Just getting started';
 }
 
 export function InsightsTab({ items }: { items: GroupedItem[] }) {
@@ -131,21 +124,21 @@ export function InsightsTab({ items }: { items: GroupedItem[] }) {
         <DoodleRainbow present={present} />
         <div className="text-center">
           <div className="font-handwritten font-bold text-5xl text-pantry-ink">{score}%</div>
-          <div className="font-handwritten text-pantry-ink/60 text-sm mt-1">Kitchen Diversity</div>
+          <div className="font-handwritten font-semibold text-pantry-ink text-base mt-0.5">{scoreDescriptor(score)}</div>
+          <div className="font-handwritten text-pantry-ink/50 text-xs mt-0.5">Kitchen Diversity</div>
         </div>
-        {/* Category legend */}
-        <div className="flex flex-wrap justify-center gap-2">
-          {CATEGORIES.map(cat => (
-            <span
-              key={cat.key}
-              className={`flex items-center gap-1.5 text-xs font-handwritten px-2 py-0.5 rounded-full border transition-opacity ${
-                present.has(cat.key) ? 'border-pantry-ink opacity-100' : 'border-pantry-ink/30 opacity-40'
-              }`}
-            >
-              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: cat.color }} />
-              {cat.label}
-            </span>
-          ))}
+        {/* Category legend — 3×2 grid */}
+        <div className="grid grid-cols-3 gap-x-4 gap-y-2 w-full px-2">
+          {CATEGORIES.map(cat => {
+            const isPresent = present.has(cat.key);
+            return (
+              <div key={cat.key} className={`flex items-center gap-1.5 font-handwritten text-sm ${isPresent ? 'text-pantry-ink' : 'text-pantry-ink/40'}`}>
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: cat.color, opacity: isPresent ? 1 : 0.4 }} />
+                <span className="truncate">{cat.label}</span>
+                <span className="ml-auto">{isPresent ? '✓' : '–'}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
