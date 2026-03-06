@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useInfiniteInventory } from "@/hooks/use-infinite-inventory";
 import { Plus, ShoppingBasket, ScanLine, Loader2, ReceiptText, X, LayoutGrid, List, Search, ArrowUpDown, Archive, ShoppingCart, Ghost, Clock, BarChart2 } from "lucide-react";
@@ -67,6 +68,7 @@ export function InventoryClient({
   const { items, isLoading, hasMore, loadMore, reset } = useInfiniteInventory(householdId);
   const [addSheetOpen, setAddSheetOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GroupedItem | null>(null);
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
   const [detailItem, setDetailItem] = useState<GroupedItem | null>(null);
   const [actionMenuItem, setActionMenuItem] = useState<GroupedItem | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -190,6 +192,10 @@ export function InventoryClient({
     await handleItemLifecycle(postMortemItem.id, 'ARCHIVE');
     setPostMortemItem(null);
   }
+
+  const handleRemoveItem = useCallback((id: string) => {
+    setRemovedIds(prev => new Set(prev).add(id));
+  }, []);
 
   async function handleSwipeArchive(itemId: string) {
     await handleItemLifecycle(itemId, 'ARCHIVE');
@@ -502,9 +508,26 @@ export function InventoryClient({
                     </h2>
                   </div>
                   <div className="flex flex-col gap-6 px-4 py-3 bg-pantry-paper" ref={listRef}>
-                    {processedGroups[locationName].map((item) => (
-                      <FoodItemCard key={item.id} item={item} onEdit={setEditingItem} onOpenDetail={setDetailItem} onArchive={handleSwipeArchive} />
-                    ))}
+                    <AnimatePresence>
+                      {processedGroups[locationName]
+                        .filter(item => !removedIds.has(item.id))
+                        .map((item) => (
+                          <motion.div
+                            key={item.id}
+                            exit={{ opacity: 0, scale: 0.9, height: 0, marginBottom: 0 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            style={{ overflow: "hidden" }}
+                          >
+                            <FoodItemCard
+                              item={item}
+                              onEdit={setEditingItem}
+                              onOpenDetail={setDetailItem}
+                              onArchive={handleSwipeArchive}
+                              onRemove={handleRemoveItem}
+                            />
+                          </motion.div>
+                        ))}
+                    </AnimatePresence>
                   </div>
                 </div>
               ))

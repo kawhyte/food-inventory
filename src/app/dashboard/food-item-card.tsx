@@ -15,6 +15,7 @@ interface FoodItemCardProps {
   onEdit: (item: GroupedItem) => void;
   onOpenDetail: (item: GroupedItem) => void;
   onArchive: (id: string) => void;
+  onRemove?: (id: string) => void;
 }
 
 function getDaysUntilExpiry(expiryDate: string): number {
@@ -38,7 +39,7 @@ function getCategoryColor(categoryName?: string): string {
 const ARCHIVE_THRESHOLD = -100;
 const MAX_DRAG = -150;
 
-export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive }: FoodItemCardProps) {
+export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive, onRemove }: FoodItemCardProps) {
   const router = useRouter();
   const [optimisticQuantity, setOptimisticQuantity] = useState(item.quantity);
   const [isPending, setIsPending] = useState(false);
@@ -128,6 +129,7 @@ export function FoodItemCard({ item, onEdit, onOpenDetail, onArchive }: FoodItem
       toast.error("Oops! Couldn't update. Try again.");
     } else if (result.deleted) {
       toast(`${item.name} removed.`);
+      onRemove?.(item.id);
       router.refresh();
     } else {
       router.refresh();
